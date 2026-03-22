@@ -1,146 +1,85 @@
-"use client";
+import { Suspense } from 'react';
+import HomeClient from './components/HomeClient';
+import { Metadata } from 'next';
 
-import Image from "next/image";
-import Link from "next/link";
-import Lotty from "./components/lotty";
-import PillNav from "./components/PillNav";
-import { useState } from "react";
+// إضافة بيانات تعريفية متقدمة لتحسين SEO
+export const metadata: Metadata = {
+  title: 'طالب بلس | منصتك الأولى لدعم المسيرة الأكاديمية والمهنية في سوريا',
+  description: 'منصة طالب بلس تقدم خدمات متكاملة للطلاب السوريين: ترجمة، كتابة وظائف، إعداد أبحاث، تطوير مواقع، وتصميم السير الذاتية. سجل الآن لتبدأ رحلتك.',
+  keywords: 'خدمات طلابية سوريا, مساعدة في الأبحاث, كتابة وظائف, ترجمة معتمدة, تطوير مواقع للطلاب, تصميم سيرة ذاتية, مشاريع التخرج, الجامعة الافتراضية السورية',
+  openGraph: {
+    title: 'طالب بلس | منصة الخدمات الطلابية في سوريا',
+    description: 'دعم أكاديمي ومهني متكامل للطلاب السوريين. خدمات: ترجمة، أبحاث، تطوير مواقع، إعداد السير الذاتية، وغيرها.',
+    url: 'https://talebplus.vercel.app',
+    siteName: 'طالب بلس',
+    images: [
+      {
+        url: 'https://talebplus.vercel.app/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'طالب بلس - منصة الخدمات الطلابية',
+      },
+    ],
+    locale: 'ar_SY',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'طالب بلس | منصة الخدمات الطلابية في سوريا',
+    description: 'دعم أكاديمي ومهني للطلاب السوريين. سجل الآن واستفد من خدماتنا المتكاملة.',
+    images: ['https://talebplus.vercel.app/twitter-image.jpg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  alternates: {
+    canonical: 'https://talebplus.vercel.app',
+  },
+};
 
-export default function Home() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
+export default function HomePage() {
   return (
     <>
-      <div className="parent">
-        <div className="div1 bg-linear-to-b from-white via-white to-[#F0EAD6] w-full max-h-screen ">
-          {/* Mobile Menu Button */}
-          <button
-            onClick={toggleMobileMenu}
-            className="lg:hidden absolute top-4 right-4 z-50 p-2 rounded-lg bg-[#F0EAD6] text-[#00416A]"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              {isMobileMenuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              )}
-            </svg>
-          </button>
-          {/* Mobile Menu - Hidden on desktop */}
-          {isMobileMenuOpen && (
-            <div className="lg:hidden absolute top-16 right-4 z-40 bg-[#F0EAD6] rounded-lg shadow-lg p-4 min-w-50">
-              <nav className="flex flex-col space-y-3">
-                <Link
-                  href="/"
-                  className="text-[#00416A] hover:bg-[#00416A] hover:text-[#F0EAD6] px-3 py-2 rounded-md transition-colors block"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  الرئيسية
-                </Link>
-                <Link
-                  href="/About"
-                  className="text-[#00416A] hover:bg-[#00416A] hover:text-[#F0EAD6] px-3 py-2 rounded-md transition-colors block"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  من نحن
-                </Link>
-                <Link
-                  href="/Services"
-                  className="text-[#00416A] hover:bg-[#00416A] hover:text-[#F0EAD6] px-3 py-2 rounded-md transition-colors block"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  خدماتنا
-                </Link>
-                <Link
-                  href="/Contact"
-                  className="text-[#00416A] hover:bg-[#00416A] hover:text-[#F0EAD6] px-3 py-2 rounded-md transition-colors block"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  تواصل معنا
-                </Link>
-              </nav>
-            </div>
-          )}
-          
-          <Lotty />
-          <div className="lg:hidden">
-            <div className="flex flex-col justify-center items-center mt-15 font-extrabold">
-            <h1 className="text-[#00416A] text-3xl">تعرّف أكثر على منصّتنا</h1>
-            <p className="text-[#00416A] text-xl mt-4">و انتقل إلى باقي الأقسام</p>
-            <a href="#BlueSec" className="bg-[#F0EAD6] text-[#00416A] hover:bg-[#00416A] hover:text-[#F0EAD6] px-4 py-2 rounded-md transition-colors block mt-4 scroll-m-100">
-              انتقل الآن 
-            </a>
-          </div>
-          </div>
-          
-        </div>
-        <div id="BlueSec" className="div2 bg-[#00416A] w-full h-screen justify-center items-center flex ">
-          {/* Desktop Navigation - Hidden on mobile */}
-          <div className="hidden lg:block">
-            <PillNav
-              items={[
-                { label: "الرئيسية", href: "/" },
-                { label: "من نحن", href: "/About" },
-                { label: "خدماتنا", href: "/Services" },
-                { label: "تواصل معنا", href: "/Contact" },
-              ]}
-              activeHref="/"
-              className="custom-nav mt-6 mx-22"
-              ease="power2.easeOut"
-              baseColor="#F0EAD6"
-              pillColor="#00416A"
-              hoveredPillTextColor="#00416A"
-              pillTextColor="#F0EAD6"
-              initialLoadAnimation={false}
-            />
-          </div>
+      <Suspense fallback={<div>جاري التحميل...</div>}>
+        <HomeClient />
+      </Suspense>
 
-          <div className="p-4 -mt-2 flex flex-col justify-center items-center">
-            <Image
-              src="/MainLogo.png"
-              alt="Logo"
-              width={300}
-              height={300}
-              className="w-800 h-90 sm:w-200 sm:h-100 md:w-200 md:h-100 lg:w-100 lg:h-80 xl:w-150 xl:h-100"
-            />
-            <div className="text-center -mt-14 space-y-2">
-              <h1 className="text-[#F0EAD6] text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold">
-                منصتك الأولى لدعم رحلتك
-              </h1>
-              <h1 className="text-[#F0EAD6] text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold">
-                الأكاديمية و المهنية
-              </h1>
-            </div>
-            <div className="p-4 mt-18">
-              <a href="/auth/login">
-                <button className="bg-[#F0EAD6] text-[#00416A] text-xl p-4 hover:bg-[#00416A] hover:text-[#F0EAD6] hover:cursor-pointer transition rounded-4xl">
-                  إبدأ رحلتك و سجّل دخول
-                  </button>
-
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* إضافة بيانات منظمة JSON‑LD لتعزيز ظهور الموقع في محركات البحث */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'EducationalOrganization',
+            name: 'طالب بلس',
+            url: 'https://talebplus.vercel.app',
+            logo: 'https://talebplus.vercel.app/MainLogo.png',
+            description: 'منصة متكاملة تقدم خدمات أكاديمية ومهنية للطلاب السوريين',
+            sameAs: [
+              'https://www.facebook.com/talebplus',
+              'https://www.instagram.com/talebplus',
+              'https://twitter.com/talebplus',
+            ],
+            address: {
+              '@type': 'PostalAddress',
+              addressCountry: 'SY',
+              addressLocality: 'دمشق',
+            },
+            offers: {
+              '@type': 'Offer',
+              description: 'خدمات متنوعة للطلاب: ترجمة، كتابة وظائف، إعداد أبحاث، تطوير مواقع، تصميم سيرة ذاتية',
+            },
+          }),
+        }}
+      />
     </>
   );
 }
