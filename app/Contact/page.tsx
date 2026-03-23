@@ -7,7 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lottie from "lottie-react";
 import { FaInstagram } from "react-icons/fa";
 // استيراد ملف Lottie واحد (يمكنك تغيير المسار)
-import contactAnimation from "@/public/animations/contact.json";
+import contactAnimation from "../../public/animations/contact.json";
 
 gsap.registerPlugin(ScrollTrigger);
 

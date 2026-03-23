@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '../../api/auth/[...nextauth]/route';
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);

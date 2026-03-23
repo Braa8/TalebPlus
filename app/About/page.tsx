@@ -8,15 +8,15 @@ import Lottie from 'lottie-react';
 import Link from 'next/link';
 
 // استيراد ملفات Lottie من مجلد public
-import heroAnimation from '@/public/animations/hero.json';
-import storyAnimation from '@/public/animations/story.json';
-import visionAnimation from '@/public/animations/vision.json';
-import missionAnimation from '@/public/animations/mission.json';
-import qualityAnimation from '@/public/animations/quality.json';
-import integrityAnimation from '@/public/animations/integrity.json';
-import innovationAnimation from '@/public/animations/innovation.json';
-import commitmentAnimation from '@/public/animations/commitment.json';
-import ctaAnimation from '@/public/animations/cta.json';
+import heroAnimation from '../../public/animations/hero.json';
+import storyAnimation from '../../public/animations/story.json';
+import visionAnimation from '../../public/animations/vision.json';
+import missionAnimation from '../../public/animations/mission.json';
+import qualityAnimation from '../../public/animations/quality.json';
+import integrityAnimation from '../../public/animations/integrity.json';
+import innovationAnimation from '../../public/animations/innovation.json';
+import commitmentAnimation from '../../public/animations/commitment.json';
+import ctaAnimation from '../../public/animations/cta.json';
 
 gsap.registerPlugin(ScrollTrigger);
 

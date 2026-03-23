@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebaseAdmin';
+import { adminDb } from '../../../../lib/firebaseAdmin';
 import bcrypt from 'bcryptjs';
-import { rateLimit } from '@/lib/rateLimit';
+import { rateLimit } from '../../../../lib/rateLimit';
 
 export async function POST(request: NextRequest) {
   // تطبيق تحديد المعدل

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { rateLimitByIdentifier } from '@/lib/rateLimit';
-import { sanitizeInput } from '@/lib/sanitize';
+import { authOptions } from '../../api/auth/[...nextauth]/route';
+import { rateLimitByIdentifier } from '../../../lib/rateLimit';
+import { sanitizeInput } from '../../../lib/sanitize';
 
 // تعريف نوع بيانات الطلب المستلمة من العميل
 interface FormDataPayload {

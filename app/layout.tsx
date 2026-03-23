@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Readex_Pro, Geist } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 import { NextAuthProvider } from "./providers/NextAuthProviders";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});

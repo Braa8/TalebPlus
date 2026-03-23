@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { adminDb } from '@/lib/firebaseAdmin';
+import { adminDb } from '../../../../lib/firebaseAdmin';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
-import { rateLimit } from '@/lib/rateLimit';
-import { sanitizeInput } from '@/lib/sanitize';
+import { rateLimit } from '../../../../lib/rateLimit';
+import { sanitizeInput } from '../../../../lib/sanitize';
 
 export async function POST(request: NextRequest) {
   try {

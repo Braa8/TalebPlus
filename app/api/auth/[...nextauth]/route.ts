@@ -1,7 +1,7 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { adminDb } from "@/lib/firebaseAdmin";
+import { adminDb } from "../../../../lib/firebaseAdmin";
 
 // التأكد من وجود secret
 if (!process.env.NEXTAUTH_SECRET) {
