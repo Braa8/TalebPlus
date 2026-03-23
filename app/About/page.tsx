@@ -7,7 +7,6 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lottie from 'lottie-react';
 import Link from 'next/link';
 
-// استيراد ملفات Lottie من مجلد public
 import heroAnimation from '../../public/animations/hero.json';
 import storyAnimation from '../../public/animations/story.json';
 import visionAnimation from '../../public/animations/vision.json';

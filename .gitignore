@@ -41,6 +41,3 @@ yarn-error.log*
 next-env.d.ts
 
 talib-plus-firebase-adminsdk-*.json
-*.json
-!package-lock.json
-!package.json
