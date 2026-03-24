@@ -1,12 +1,14 @@
 // ==================================================
-// الملف الأول: app/Services/RequestFormClient.tsx
+// الملف: app/Services/RequestFormClient.tsx
 // ==================================================
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
-// تعريف أنواع البيانات بشكل شامل يضم جميع الخدمات
+// تعريف أنواع البيانات (كامل كما هو مع إضافة حقول الروابط اختيارياً)
 interface FormData {
   // الحقول المشتركة
   fullName: string;
@@ -20,64 +22,64 @@ interface FormData {
 
   // حقول الترجمة
   translationFile: File | null;
-  translationPages: string; // عدد الصفحات
-  targetLanguage: string; // لغة الهدف (عربية/انجليزية)
-  deliveryDate: string; // الموعد النهائي
+  translationPages: string;
+  targetLanguage: string;
+  deliveryDate: string;
 
   // حقول كتابة الوظائف (الجامعة الافتراضية)
-  fullNameTriple: string; // الاسم الثلاثي
-  universityId: string; // الرقم الجامعي
-  classNumber: string; // رقم الصف
-  professorName: string; // اسم الدكتور
-  programName: string; // البرنامج
-  programCode: string; // رمز البرنامج
-  subjectName: string; // اسم المادة
-  subjectCode: string; // رمز المادة
-  homeWorkDetails: string; // تفاصيل الوظيفة (ملخص المتطلبات أو نص الوظيفة)
+  fullNameTriple: string;
+  universityId: string;
+  classNumber: string;
+  professorName: string;
+  programName: string;
+  programCode: string;
+  subjectName: string;
+  subjectCode: string;
+  homeWorkDetails: string;
 
   // حقول تنسيق وتنضيد البحوث
   researchFile: File | null;
-  universityName: string; // اسم الجامعة
-  formattingTemplate: File | null; // نموذج التنسيق (اختياري)
-  researchDeliveryDate: string; // الموعد النهائي
+  universityName: string;
+  formattingTemplate: File | null;
+  researchDeliveryDate: string;
 
   // حقول إعداد مشاريع التخرج
-  projectTitle: string; // عنوان المشروع
-  specialization: string; // التخصص
-  expectedPages: string; // عدد الصفحات المتوقع
-  universityRequirements: string; // متطلبات الجامعة
-  projectDeliveryDate: string; // الموعد النهائي
-  supervisorName: string; // المشرف العلمي (اختياري)
-  supervisorInstructions: string; // تعليمات المشرف (اختياري)
+  projectTitle: string;
+  specialization: string;
+  expectedPages: string;
+  universityRequirements: string;
+  projectDeliveryDate: string;
+  supervisorName: string;
+  supervisorInstructions: string;
 
   // حقول إعداد السير الذاتية
-  cvFullName: string; // الاسم
-  cvSpecialization: string; // التخصص
-  cvExperience: string; // الخبرات
-  cvSkills: string; // المهارات
-  cvCourses: string; // الدورات التدريبية
-  cvLanguages: string; // اللغات
-  cvObjective: string; // الهدف المهني
+  cvFullName: string;
+  cvSpecialization: string;
+  cvExperience: string;
+  cvSkills: string;
+  cvCourses: string;
+  cvLanguages: string;
+  cvObjective: string;
 
   // حقول إعداد العروض التقديمية
-  presentationTopic: string; // موضوع العرض
-  presentationSlides: string; // عدد الشرائح
-  presentationContent: File | null; // النص أو المحتوى
-  presentationLanguage: string; // لغة العرض
-  presentationDeliveryDate: string; // الموعد النهائي
+  presentationTopic: string;
+  presentationSlides: string;
+  presentationContent: File | null;
+  presentationLanguage: string;
+  presentationDeliveryDate: string;
 
   // حقول تصميم بوسترات وأغلفة
-  posterTitle: string; // عنوان المشروع
-  posterStudentName: string; // اسم الطالب
-  posterUniversity: string; // اسم الجامعة
-  posterLogo: File | null; // الشعار (ان وجد) (اختياري)
-  posterSize: string; // المقاس المطلوب
+  posterTitle: string;
+  posterStudentName: string;
+  posterUniversity: string;
+  posterLogo: File | null;
+  posterSize: string;
 
   // حقول إعداد الاستبيانات
-  surveyTopic: string; // موضوع البحث
-  surveyTarget: string; // الفئة المستهدفة
-  surveyQuestionsCount: string; // عدد الأسئلة المتوقع
-  surveyQuestionType: string; // نوع الأسئلة (مغلقة / مفتوحة)
+  surveyTopic: string;
+  surveyTarget: string;
+  surveyQuestionsCount: string;
+  surveyQuestionType: string;
 
   // حقول تطوير المواقع (خدمة قديمة)
   websiteType: string;
@@ -98,6 +100,15 @@ interface FormData {
   methodology: string;
   sourceCount: string;
   citationFormat: string;
+
+  // روابط الملفات بعد الرفع (تضاف ديناميكياً)
+  translationFileUrl?: string;
+  researchFileUrl?: string;
+  formattingTemplateUrl?: string;
+  presentationContentUrl?: string;
+  designFileUrl?: string;
+  referenceFileUrl?: string;
+  posterLogoUrl?: string;
 }
 
 // تعريف مراحل النموذج
@@ -108,15 +119,15 @@ enum FormStep {
   REVIEW = 3,
 }
 
-// تعريف الخدمات بشكل ديناميكي
+// تعريف الخدمات (كما هي)
 interface ServiceOption {
   value: string;
   label: string;
   icon: string;
   description: string;
-  price: number; // بالسعر المحلي (ل.س)
-  detailsDescription?: string; // وصف إضافي يظهر في التفاصيل
-  fields: string[]; // أسماء الحقول المطلوبة (تظهر في الخطوة الثالثة)
+  price: number;
+  detailsDescription?: string;
+  fields: string[];
 }
 
 const services: ServiceOption[] = [
@@ -285,6 +296,7 @@ const services: ServiceOption[] = [
     price: 0,
     fields: [],
   },
+
 ];
 
 // دالة مساعدة لإنشاء كائن فارغ من FormData
@@ -356,7 +368,7 @@ const createEmptyFormData = (): FormData => ({
   citationFormat: "",
 });
 
-// تعريف الحقول الاختيارية (لن يتم التحقق من إجباريتها)
+// الحقول الاختيارية (لن يتم التحقق من إجباريتها)
 const optionalFields = [
   'formattingTemplate',
   'posterLogo',
@@ -364,20 +376,26 @@ const optionalFields = [
   'designFile',
   'supervisorInstructions',
   'supervisorName',
-  // 'presentationContent', // أزلناها من الاختيارية لأنها إلزامية حسب الوصف
 ];
 
 const RequestFormClient: React.FC = () => {
-  // تهيئة الحالة بالقيم الافتراضية فقط (لا تستخدم localStorage هنا)
-  const [formData, setFormData] = useState<FormData>(createEmptyFormData());
+  const { data: session } = useSession();
+  const router = useRouter();
 
-  // تحميل البيانات من localStorage بعد تحميل المكون (client-side فقط)
+  const [formData, setFormData] = useState<FormData>(createEmptyFormData());
+  const [estimatedPrice, setEstimatedPrice] = useState<number>(0);
+  const [priceBreakdown, setPriceBreakdown] = useState<string>("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [currentStep, setCurrentStep] = useState<FormStep>(FormStep.SERVICE);
+  const [loading, setLoading] = useState(false);
+
+  // تحميل البيانات من localStorage بعد تحميل المكون
   useEffect(() => {
     const savedData = localStorage.getItem("requestFormDraft");
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         setFormData((prev) => ({ ...prev, ...parsed }));
       } catch (e) {
         console.error("Failed to load draft", e);
@@ -385,25 +403,8 @@ const RequestFormClient: React.FC = () => {
     }
   }, []);
 
-  // حالة السعر التقديري
-  const [estimatedPrice, setEstimatedPrice] = useState<number>(0);
-  const [priceBreakdown, setPriceBreakdown] = useState<string>("");
-
-  // حالة التحقق من الصحة
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // حالة تأكيد الطلب
-  const [showConfirmation, setShowConfirmation] = useState(false);
-
-  // حالة الخطوة الحالية
-  const [currentStep, setCurrentStep] = useState<FormStep>(FormStep.SERVICE);
-
-  // حالة التحميل عند إرسال الطلب
-  const [loading, setLoading] = useState(false);
-
-  // حفظ البيانات في localStorage عند كل تغيير (باستخدام useEffect)
+  // حفظ البيانات في localStorage (تجاهل الملفات)
   useEffect(() => {
-    // لا نحفظ الملفات
     const dataToSave: Record<string, unknown> = {};
     for (const key in formData) {
       const value = formData[key as keyof FormData];
@@ -414,7 +415,7 @@ const RequestFormClient: React.FC = () => {
     localStorage.setItem("requestFormDraft", JSON.stringify(dataToSave));
   }, [formData]);
 
-  // حساب السعر التقديري (ثابت مع إضافة رسوم التسليم العاجل فقط)
+  // حساب السعر التقديري
   const calculatePrice = useCallback(() => {
     const service = services.find((s) => s.value === formData.serviceType);
     if (!service) {
@@ -422,85 +423,66 @@ const RequestFormClient: React.FC = () => {
       setPriceBreakdown("");
       return;
     }
-
     let price = service.price;
     let breakdown = `السعر الأساسي: ${price.toLocaleString()} ل.س`;
-
     if (formData.urgentDelivery) {
       price = Math.round(price * 1.5);
       breakdown += `\n• تسليم عاجل: +50% (السعر بعد الزيادة: ${price.toLocaleString()} ل.س)`;
     }
-
     setEstimatedPrice(price);
     setPriceBreakdown(breakdown);
   }, [formData.serviceType, formData.urgentDelivery]);
 
-  // تحديث السعر عند تغيير الخدمة أو التسليم العاجل
   useEffect(() => {
     calculatePrice();
   }, [calculatePrice]);
 
+  // التحقق من جميع الحقول الإلزامية
   const validateAllFields = (): boolean => {
-  const newErrors: Record<string, string> = {};
-  const service = services.find((s) => s.value === formData.serviceType);
+    const newErrors: Record<string, string> = {};
+    const service = services.find((s) => s.value === formData.serviceType);
 
-  // التحقق من الحقول المشتركة
-  if (!formData.fullName.trim()) newErrors.fullName = "الاسم الكامل مطلوب";
-  if (!formData.email.trim()) newErrors.email = "البريد الإلكتروني مطلوب";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "البريد الإلكتروني غير صحيح";
-  if (!formData.phone.trim()) newErrors.phone = "رقم الهاتف مطلوب";
+    if (!formData.fullName.trim()) newErrors.fullName = "الاسم الكامل مطلوب";
+    if (!formData.email.trim()) newErrors.email = "البريد الإلكتروني مطلوب";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      newErrors.email = "البريد الإلكتروني غير صحيح";
+    if (!formData.phone.trim()) newErrors.phone = "رقم الهاتف مطلوب";
 
-  // التحقق من حقول الخدمة المحددة
-  if (service) {
-    service.fields.forEach((field) => {
-      // تجاهل الحقول الاختيارية
-      if (optionalFields.includes(field)) return;
+    if (service) {
+      service.fields.forEach((field) => {
+        if (optionalFields.includes(field)) return;
+        const value = formData[field as keyof FormData];
+        if (!value) newErrors[field] = "هذا الحقل مطلوب";
+        else if (typeof value === "string" && !value.trim()) newErrors[field] = "هذا الحقل مطلوب";
+      });
+    }
 
-      const value = formData[field as keyof FormData];
-      if (!value) {
-        newErrors[field] = "هذا الحقل مطلوب";
-      } else if (typeof value === "string" && !value.trim()) {
-        newErrors[field] = "هذا الحقل مطلوب";
-      }
-      // ملاحظة: للحقول من نوع File، null يعني عدم وجود ملف
-    });
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
-
-  // التعامل مع تغيير الحقول (بدون استدعاء calculatePrice)
+  // دوال معالجة المدخلات
   const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value, type } = e.target;
-
     if (type === "checkbox") {
       const checkbox = e.target as HTMLInputElement;
       setFormData((prev) => ({ ...prev, [name]: checkbox.checked }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
-
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleFileUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
-    fieldName: string,
+    fieldName: string
   ) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 20 * 1024 * 1024) {
-        setErrors((prev) => ({
-          ...prev,
-          [fieldName]: "حجم الملف يتجاوز الحد الأقصى (20 ميجابايت)",
-        }));
+        setErrors((prev) => ({ ...prev, [fieldName]: "حجم الملف يتجاوز الحد الأقصى (20 ميجابايت)" }));
         return;
       }
       setFormData((prev) => ({ ...prev, [fieldName]: file }));
@@ -516,44 +498,27 @@ const RequestFormClient: React.FC = () => {
     }));
   };
 
-  // التحقق من صحة النموذج (حسب الخطوة والخدمة)
+  // التحقق من صحة الخطوة الحالية
   const validateStep = (step: FormStep): boolean => {
     const newErrors: Record<string, string> = {};
     const service = services.find((s) => s.value === formData.serviceType);
 
     if (step === FormStep.SERVICE) {
-      if (!formData.serviceType) {
-        newErrors.serviceType = "يرجى اختيار الخدمة";
-      }
+      if (!formData.serviceType) newErrors.serviceType = "يرجى اختيار الخدمة";
     }
-
     if (step === FormStep.BASIC_INFO) {
-      if (!formData.fullName.trim()) {
-        newErrors.fullName = "الاسم الكامل مطلوب";
-      }
-      if (!formData.email.trim()) {
-        newErrors.email = "البريد الإلكتروني مطلوب";
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      if (!formData.fullName.trim()) newErrors.fullName = "الاسم الكامل مطلوب";
+      if (!formData.email.trim()) newErrors.email = "البريد الإلكتروني مطلوب";
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
         newErrors.email = "البريد الإلكتروني غير صحيح";
-      }
-      if (!formData.phone.trim()) {
-        newErrors.phone = "رقم الهاتف مطلوب";
-      }
+      if (!formData.phone.trim()) newErrors.phone = "رقم الهاتف مطلوب";
     }
-
     if (step === FormStep.SERVICE_DETAILS && service) {
       service.fields.forEach((field) => {
-        // إذا كان الحقل في قائمة الاختيارية، نتخطى التحقق
         if (optionalFields.includes(field)) return;
-
         const value = formData[field as keyof FormData];
-        // التحقق من الحقول الإلزامية: يجب أن تكون موجودة وغير فارغة (إن كانت string)
-        if (!value) {
-          newErrors[field] = "هذا الحقل مطلوب";
-        } else if (typeof value === "string" && !value.trim()) {
-          newErrors[field] = "هذا الحقل مطلوب";
-        }
-        // بالنسبة للحقول من نوع File، null يعني عدم وجود ملف، وسيتم اعتباره خطأ
+        if (!value) newErrors[field] = "هذا الحقل مطلوب";
+        else if (typeof value === "string" && !value.trim()) newErrors[field] = "هذا الحقل مطلوب";
       });
     }
 
@@ -561,7 +526,6 @@ const RequestFormClient: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // التنقل بين الخطوات
   const goToNextStep = () => {
     if (validateStep(currentStep)) {
       if (currentStep === FormStep.SERVICE_DETAILS) {
@@ -583,22 +547,99 @@ const RequestFormClient: React.FC = () => {
     localStorage.removeItem("requestFormDraft");
   };
 
- const sendEmail = async () => {
+  // ------------------- دوال رفع الملفات -------------------
+  const uploadFileToStorage = async (file: File, userId: string): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('userId', userId);
+
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'فشل رفع الملف');
+    }
+
+    const data = await res.json();
+    return data.url; // Vercel Blob returns { url }
+  };
+
+  const uploadAllFiles = async (userId: string): Promise<Record<string, string>> => {
+    const urls: Record<string, string> = {};
+    const fieldsToUpload = [
+      'translationFile',
+      'researchFile',
+      'presentationContent',
+      'designFile',
+      'referenceFile',
+      'posterLogo',
+    ];
+
+    for (const field of fieldsToUpload) {
+      const file = formData[field as keyof FormData] as File | null;
+      if (file) {
+        try {
+          const url = await uploadFileToStorage(file, userId);
+          urls[`${field}Url`] = url;
+        } catch (err: unknown) {
+          const errorMessage = err instanceof Error ? err.message : 'فشل رفع الملف';
+          setErrors((prev) => ({ ...prev, [field]: errorMessage }));
+          throw err;
+        }
+      }
+    }
+    return urls;
+  };
+
+  // إرسال الطلب (بعد رفع الملفات)
+  const sendEmail = async () => {
   if (!validateAllFields()) {
     alert("يرجى ملء جميع الحقول المطلوبة قبل الإرسال.");
     return;
   }
 
+  if (!session?.user?.id) {
+    alert("يجب تسجيل الدخول أولاً");
+    router.push("/auth/login");
+    return;
+  }
+
   setLoading(true);
   try {
+    const uploadedUrls = await uploadAllFiles(session.user.id);
+
+    const { 
+  translationFile: _translationFile, 
+  researchFile: _researchFile, 
+  presentationContent: _presentationContent, 
+  designFile: _designFile, 
+  referenceFile: _referenceFile, 
+  posterLogo: _posterLogo, 
+  ...restFormData 
+} = formData;
+
+void _translationFile;
+void _researchFile;
+void _presentationContent;
+void _designFile;
+void _referenceFile;
+void _posterLogo;
+    const payload = {
+      formData: {
+        ...restFormData,
+        ...uploadedUrls,
+      },
+      estimatedPrice,
+      priceBreakdown,
+    };
+
     const response = await fetch("/api/send-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        formData,
-        estimatedPrice,
-        priceBreakdown,
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (response.ok) {
@@ -608,9 +649,10 @@ const RequestFormClient: React.FC = () => {
       const error = await response.json();
       alert(error.error || "حدث خطأ أثناء الإرسال، يرجى المحاولة لاحقًا.");
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("فشل الإرسال:", error);
-    alert("حدث خطأ في الشبكة. تأكد من اتصالك بالإنترنت.");
+    const errorMessage = error instanceof Error ? error.message : "حدث خطأ في الشبكة. تأكد من اتصالك بالإنترنت.";
+    alert(errorMessage);
   } finally {
     setLoading(false);
   }
@@ -651,51 +693,27 @@ const RequestFormClient: React.FC = () => {
     );
   };
 
-  // عرض شاشة التأكيد
+  // شاشة التأكيد (نفس الأصل)
   if (showConfirmation) {
     const service = services.find((s) => s.value === formData.serviceType);
     return (
       <div className="min-h-screen bg-linear-to-br from-[#F0EAD6] to-white py-12 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 border border-white/20">
-            <h1 className="text-3xl font-bold text-[#00416A] mb-6 text-center">
-              تأكيد الطلب
-            </h1>
+            <h1 className="text-3xl font-bold text-[#00416A] mb-6 text-center">تأكيد الطلب</h1>
             <div className="space-y-4 mb-8">
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h2 className="text-xl font-semibold text-[#00416A] mb-3">
-                  معلومات الطلب
-                </h2>
-                <p>
-                  <span className="font-semibold">الاسم:</span>{" "}
-                  {formData.fullName}
-                </p>
-                <p>
-                  <span className="font-semibold">البريد:</span>{" "}
-                  {formData.email}
-                </p>
-                <p>
-                  <span className="font-semibold">الهاتف:</span>{" "}
-                  {formData.phone}
-                </p>
-                <p>
-                  <span className="font-semibold">الخدمة:</span>{" "}
-                  {service?.label}
-                </p>
-                {formData.urgentDelivery && (
-                  <p className="text-red-600 font-semibold">تسليم عاجل</p>
-                )}
+                <h2 className="text-xl font-semibold text-[#00416A] mb-3">معلومات الطلب</h2>
+                <p><span className="font-semibold">الاسم:</span> {formData.fullName}</p>
+                <p><span className="font-semibold">البريد:</span> {formData.email}</p>
+                <p><span className="font-semibold">الهاتف:</span> {formData.phone}</p>
+                <p><span className="font-semibold">الخدمة:</span> {service?.label}</p>
+                {formData.urgentDelivery && <p className="text-red-600 font-semibold">تسليم عاجل</p>}
               </div>
               <div className="bg-blue-50 p-4 rounded-lg">
-                <h2 className="text-xl font-semibold text-[#00416A] mb-3">
-                  السعر التقديري
-                </h2>
-                <div className="text-2xl font-bold text-[#00416A] mb-2">
-                  {estimatedPrice.toLocaleString()} ل.س
-                </div>
-                <pre className="text-sm text-gray-600 whitespace-pre-wrap">
-                  {priceBreakdown}
-                </pre>
+                <h2 className="text-xl font-semibold text-[#00416A] mb-3">السعر التقديري</h2>
+                <div className="text-2xl font-bold text-[#00416A] mb-2">{estimatedPrice.toLocaleString()} ل.س</div>
+                <pre className="text-sm text-gray-600 whitespace-pre-wrap">{priceBreakdown}</pre>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -734,7 +752,7 @@ const RequestFormClient: React.FC = () => {
     );
   }
 
-  // عرض النموذج
+  // النموذج الرئيسي (يحتوي على كل JSX الأصلي)
   const service = services.find((s) => s.value === formData.serviceType);
 
   return (
@@ -747,25 +765,18 @@ const RequestFormClient: React.FC = () => {
             </h1>
           </Link>
           <h1 className="text-5xl font-bold text-[#00416A] mb-2">طلب الخدمة</h1>
-          <p className="text-gray-600">
-            املأ النموذج أدناه وسنقوم بالتواصل معك قريباً
-          </p>
+          <p className="text-gray-600">املأ النموذج أدناه وسنقوم بالتواصل معك قريباً</p>
         </div>
 
         {renderProgress()}
 
-        {/* عرض السعر التقديري مع تنويه */}
         {estimatedPrice > 0 && currentStep !== FormStep.SERVICE && (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border-r-4 border-[#00416A]">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <h2 className="text-sm text-gray-500">السعر التقديري</h2>
-                <div className="text-3xl font-bold text-[#00416A]">
-                  {estimatedPrice.toLocaleString()} ل.س
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  * السعر يزداد 50% في حالة التسليم العاجل
-                </p>
+                <div className="text-3xl font-bold text-[#00416A]">{estimatedPrice.toLocaleString()} ل.س</div>
+                <p className="text-xs text-gray-500 mt-1">* السعر يزداد 50% في حالة التسليم العاجل</p>
               </div>
               <button
                 onClick={() => setShowConfirmation(true)}

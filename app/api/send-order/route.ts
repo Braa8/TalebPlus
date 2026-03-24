@@ -1,3 +1,4 @@
+// app/api/send-order/route.ts
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { getServerSession } from 'next-auth';
@@ -229,7 +230,6 @@ function sanitizeFormData(data: FormDataPayload): FormDataPayload {
     if (typeof val === 'string') {
       result[key] = sanitizeInput(val);
     }
-    // لا نحتاج لمعالجة المصفوفات أو القيم الأخرى هنا، لأنها ليست نصية
   }
   return result;
 }
@@ -294,13 +294,13 @@ export async function POST(request: Request) {
     // الحقول المشتركة (نعرضها دائماً)
     const commonFieldsHtml = `
       <table dir="rtl" style="width:100%; border-collapse: collapse; margin-bottom: 15px;">
-        <tr><td style="padding:8px; font-weight:bold; width:200px; background:#f9f9f9;">الاسم الكامل</td><td style="padding:8px;">${sanitizedFormData.fullName}</td></tr>
-        <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">البريد الإلكتروني</td><td style="padding:8px;">${sanitizedFormData.email}</td></tr>
-        <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">رقم الهاتف</td><td style="padding:8px;">${sanitizedFormData.phone}</td></tr>
-        <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">الخدمة المطلوبة</td><td style="padding:8px;">${serviceLabel}</td></tr>
-        <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">تسليم عاجل</td><td style="padding:8px;">${urgentDelivery}</td></tr>
-        <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">الميزانية التقريبية</td><td style="padding:8px;">${hasBudget}</td></tr>
-      </table>
+         <tr><td style="padding:8px; font-weight:bold; width:200px; background:#f9f9f9;">الاسم الكامل</td><td style="padding:8px;">${sanitizedFormData.fullName}</td></tr>
+         <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">البريد الإلكتروني</td><td style="padding:8px;">${sanitizedFormData.email}</td></tr>
+         <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">رقم الهاتف</td><td style="padding:8px;">${sanitizedFormData.phone}</td></tr>
+         <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">الخدمة المطلوبة</td><td style="padding:8px;">${serviceLabel}</td></tr>
+         <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">تسليم عاجل</td><td style="padding:8px;">${urgentDelivery}</td></tr>
+         <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">الميزانية التقريبية</td><td style="padding:8px;">${hasBudget}</td></tr>
+       </table>
     `;
 
     // الحقول الخاصة بالخدمة (نستثني الحقول المشتركة)
@@ -311,7 +311,35 @@ export async function POST(request: Request) {
       ? buildTableFromFields(sanitizedFormData, serviceFields)
       : '<p>لا توجد تفاصيل إضافية محددة.</p>';
 
-    // بناء HTML
+    // --- قسم الملفات المرفوعة (روابط) ---
+    const attachmentFields = [
+      'translationFileUrl',
+      'researchFileUrl',
+      'formattingTemplateUrl',
+      'presentationContentUrl',
+      'designFileUrl',
+      'referenceFileUrl',
+      'posterLogoUrl',
+    ];
+    const attachmentsHtml = attachmentFields
+      .filter(field => sanitizedFormData[field])
+      .map(field => {
+        const originalField = field.replace('Url', '');
+        const label = getFieldLabel(originalField);
+        const url = sanitizedFormData[field] as string;
+        return `
+          <p style="margin: 8px 0;">
+            <strong>${label}:</strong>
+            <a href="${url}" target="_blank" style="color: #00416A;">تحميل الملف</a>
+          </p>
+        `;
+      })
+      .join('');
+    const attachmentsSection = attachmentsHtml
+      ? `<h3>📎 الملفات المرفوعة</h3>${attachmentsHtml}`
+      : '';
+
+    // بناء HTML النهائي
     const htmlContent = `
       <!DOCTYPE html>
       <html dir="rtl">
@@ -337,6 +365,8 @@ export async function POST(request: Request) {
 
           <h3>🔍 تفاصيل الخدمة</h3>
           ${serviceFieldsHtml}
+
+          ${attachmentsSection}
 
           <h3>💰 السعر التقديري</h3>
           <div class="price">
