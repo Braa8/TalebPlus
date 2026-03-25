@@ -995,1405 +995,1400 @@ void _posterLogo;
           )}
 
           {/* الخطوة 3: تفاصيل الخدمة */}
-          {currentStep === FormStep.SERVICE_DETAILS && service && (
-            <div className="space-y-8">
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-[#00416A]">
-                  {service.label}
-                </h2>
-                {service.detailsDescription && (
-                  <p className="text-gray-600 mt-2 bg-blue-50 p-3 rounded-lg">
-                    {service.detailsDescription}
-                  </p>
-                )}
-              </div>
+{currentStep === FormStep.SERVICE_DETAILS && service && (
+  <div className="space-y-8">
+    <div className="text-center mb-8">
+      <h2 className="text-2xl font-bold text-[#00416A]">
+        {service.label}
+      </h2>
+      {service.detailsDescription && (
+        <p className="text-gray-600 mt-2 bg-blue-50 p-3 rounded-lg">
+          {service.detailsDescription}
+        </p>
+      )}
+    </div>
 
-              {/* عرض الحقول ديناميكياً حسب الخدمة */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {service.fields.includes("fullNameTriple") && (
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الاسم الثلاثي الكامل{" "}
-                      <span className="text-red-500">*</span>
-                      <span
-                        className="mr-2 text-gray-400"
-                        title="أدخل اسمك كما هو في الجامعة"
-                      >
-                        ⓘ
-                      </span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="fullNameTriple"
-                      value={formData.fullNameTriple}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.fullNameTriple
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.fullNameTriple && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.fullNameTriple}
-                      </p>
-                    )}
-                  </div>
-                )}
+    {/* عرض الحقول ديناميكياً حسب الخدمة */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+      {service.fields.includes("fullNameTriple") && (
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            الاسم الثلاثي الكامل{" "}
+            <span className="text-red-500">*</span>
+            <span
+              className="mr-2 text-gray-400"
+              title="أدخل اسمك كما هو في الجامعة"
+            >
+              ⓘ
+            </span>
+          </label>
+          <input
+            required
+            type="text"
+            name="fullNameTriple"
+            value={formData.fullNameTriple}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] transition-all ${
+              errors.fullNameTriple
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.fullNameTriple && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.fullNameTriple}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("universityId") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الرقم الجامعي <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="universityId"
-                      value={formData.universityId}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.universityId
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.universityId && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.universityId}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("universityId") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            الرقم الجامعي <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="universityId"
+            value={formData.universityId}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.universityId
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.universityId && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.universityId}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("classNumber") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      رقم الصف <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="classNumber"
-                      value={formData.classNumber}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.classNumber
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.classNumber && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.classNumber}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("classNumber") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            رقم الصف <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="classNumber"
+            value={formData.classNumber}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.classNumber
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.classNumber && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.classNumber}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("professorName") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      اسم الدكتور <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="professorName"
-                      value={formData.professorName}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.professorName
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.professorName && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.professorName}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("professorName") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            اسم الدكتور <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="professorName"
+            value={formData.professorName}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.professorName
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.professorName && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.professorName}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("programName") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      البرنامج <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="programName"
-                      value={formData.programName}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.programName
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.programName && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.programName}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("programName") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            البرنامج <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="programName"
+            value={formData.programName}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.programName
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.programName && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.programName}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("programCode") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      رمز البرنامج <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="programCode"
-                      value={formData.programCode}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.programCode
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.programCode && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.programCode}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("programCode") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            رمز البرنامج <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="programCode"
+            value={formData.programCode}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.programCode
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.programCode && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.programCode}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("subjectName") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      اسم المادة <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="subjectName"
-                      value={formData.subjectName}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.subjectName
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.subjectName && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.subjectName}
-                      </p>
-                    )}
-                  </div>
-                )}
-                {service.fields.includes("homeWorkDetails") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      عنوان الوظيفة و ملخص عن المتطلبات المرفقة <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="homeWorkDetails"
-                      value={formData.homeWorkDetails}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.homeWorkDetails
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.homeWorkDetails && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.homeWorkDetails}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("subjectName") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            اسم المادة <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="subjectName"
+            value={formData.subjectName}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.subjectName
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.subjectName && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.subjectName}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("subjectCode") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      رمز المادة <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="subjectCode"
-                      value={formData.subjectCode}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.subjectCode
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.subjectCode && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.subjectCode}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("homeWorkDetails") && (
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            عنوان الوظيفة و ملخص عن المتطلبات المرفقة <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="homeWorkDetails"
+            value={formData.homeWorkDetails}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.homeWorkDetails
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.homeWorkDetails && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.homeWorkDetails}
+            </p>
+          )}
+        </div>
+      )}
 
-                {/* خدمات الترجمة */}
-                {service.fields.includes("translationFile") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الملف المراد ترجمته{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="file"
-                      accept=".pdf,.doc,.docx,.txt"
-                      onChange={(e) => handleFileUpload(e, "translationFile")}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#00416A] file:text-white hover:file:bg-opacity-90"
-                    />
-                    {errors.translationFile && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.translationFile}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("subjectCode") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            رمز المادة <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="subjectCode"
+            value={formData.subjectCode}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.subjectCode
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.subjectCode && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.subjectCode}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("translationPages") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      عدد الصفحات <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="number"
-                      name="translationPages"
-                      value={formData.translationPages}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.translationPages
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                      placeholder="0"
-                    />
-                    {errors.translationPages && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.translationPages}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {/* خدمات الترجمة */}
+      {service.fields.includes("translationFile") && (
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            الملف المراد ترجمته{" "}
+            <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="file"
+            accept=".pdf,.doc,.docx,.txt"
+            onChange={(e) => handleFileUpload(e, "translationFile")}
+            className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#00416A] file:text-white hover:file:bg-opacity-90"
+          />
+          {errors.translationFile && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.translationFile}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("targetLanguage") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      لغة الترجمة الهدف <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="targetLanguage"
-                      value={formData.targetLanguage}
-                      onChange={handleInputChange}
-                      required
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.targetLanguage
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    >
-                      <option value="">اختر اللغة</option>
-                      <option value="ar">العربية</option>
-                      <option value="en">الإنجليزية</option>
-                    </select>
-                    {errors.targetLanguage && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.targetLanguage}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("translationPages") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            عدد الصفحات <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="number"
+            name="translationPages"
+            value={formData.translationPages}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.translationPages
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+            placeholder="0"
+          />
+          {errors.translationPages && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.translationPages}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("deliveryDate") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الموعد النهائي <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="date"
-                      name="deliveryDate"
-                      value={formData.deliveryDate}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.deliveryDate
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.deliveryDate && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.deliveryDate}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("targetLanguage") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            لغة الترجمة الهدف <span className="text-red-500">*</span>
+          </label>
+          <select
+            name="targetLanguage"
+            value={formData.targetLanguage}
+            onChange={handleInputChange}
+            required
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.targetLanguage
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          >
+            <option value="">اختر اللغة</option>
+            <option value="ar">العربية</option>
+            <option value="en">الإنجليزية</option>
+          </select>
+          {errors.targetLanguage && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.targetLanguage}
+            </p>
+          )}
+        </div>
+      )}
 
-                {/* خدمة تنسيق البحوث */}
-                {service.fields.includes("researchFile") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      ملف البحث <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      onChange={(e) => handleFileUpload(e, "researchFile")}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#00416A] file:text-white"
-                    />
-                    {errors.researchFile && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.researchFile}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("deliveryDate") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            الموعد النهائي <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="date"
+            name="deliveryDate"
+            value={formData.deliveryDate}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.deliveryDate
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.deliveryDate && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.deliveryDate}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("universityName") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      اسم الجامعة <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="universityName"
-                      value={formData.universityName}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.universityName
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.universityName && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.universityName}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {/* خدمة تنسيق البحوث */}
+      {service.fields.includes("researchFile") && (
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            ملف البحث <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="file"
+            accept=".pdf,.doc,.docx"
+            onChange={(e) => handleFileUpload(e, "researchFile")}
+            className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#00416A] file:text-white"
+          />
+          {errors.researchFile && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.researchFile}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("formattingTemplate") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      نموذج التنسيق (اختياري)
-                    </label>
-                    <input
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      onChange={(e) =>
-                        handleFileUpload(e, "formattingTemplate")
-                      }
-                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#00416A] file:text-white"
-                    />
-                  </div>
-                )}
+      {service.fields.includes("universityName") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            اسم الجامعة <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="universityName"
+            value={formData.universityName}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.universityName
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.universityName && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.universityName}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("researchDeliveryDate") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الموعد النهائي <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="date"
-                      name="researchDeliveryDate"
-                      value={formData.researchDeliveryDate}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.researchDeliveryDate
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.researchDeliveryDate && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.researchDeliveryDate}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("formattingTemplate") && (
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            نموذج التنسيق (اختياري)
+          </label>
+          <input
+            type="file"
+            accept=".pdf,.doc,.docx"
+            onChange={(e) => handleFileUpload(e, "formattingTemplate")}
+            className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#00416A] file:text-white"
+          />
+        </div>
+      )}
 
-                {/* خدمة إعداد مشاريع التخرج */}
-                {service.fields.includes("projectTitle") && (
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      عنوان المشروع <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="projectTitle"
-                      value={formData.projectTitle}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.projectTitle
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.projectTitle && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.projectTitle}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("researchDeliveryDate") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            الموعد النهائي <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="date"
+            name="researchDeliveryDate"
+            value={formData.researchDeliveryDate}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.researchDeliveryDate
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.researchDeliveryDate && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.researchDeliveryDate}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("specialization") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      التخصص <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="specialization"
-                      value={formData.specialization}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.specialization
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.specialization && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.specialization}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {/* خدمة إعداد مشاريع التخرج */}
+      {service.fields.includes("projectTitle") && (
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            عنوان المشروع <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="projectTitle"
+            value={formData.projectTitle}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.projectTitle
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.projectTitle && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.projectTitle}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("expectedPages") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      عدد الصفحات المتوقع{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="number"
-                      name="expectedPages"
-                      value={formData.expectedPages}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.expectedPages
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.expectedPages && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.expectedPages}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("specialization") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            التخصص <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="specialization"
+            value={formData.specialization}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.specialization
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.specialization && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.specialization}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("universityRequirements") && (
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      متطلبات الجامعة <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      required
-                      name="universityRequirements"
-                      value={formData.universityRequirements}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.universityRequirements
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                      placeholder="اذكر متطلبات الجامعة الخاصة بمشروع التخرج..."
-                    />
-                    {errors.universityRequirements && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.universityRequirements}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("expectedPages") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            عدد الصفحات المتوقع{" "}
+            <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="number"
+            name="expectedPages"
+            value={formData.expectedPages}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.expectedPages
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.expectedPages && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.expectedPages}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("projectDeliveryDate") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الموعد النهائي <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="date"
-                      name="projectDeliveryDate"
-                      value={formData.projectDeliveryDate}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.projectDeliveryDate
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.projectDeliveryDate && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.projectDeliveryDate}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("universityRequirements") && (
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            متطلبات الجامعة <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            required
+            name="universityRequirements"
+            value={formData.universityRequirements}
+            onChange={handleInputChange}
+            rows={3}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.universityRequirements
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+            placeholder="اذكر متطلبات الجامعة الخاصة بمشروع التخرج..."
+          />
+          {errors.universityRequirements && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.universityRequirements}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("supervisorName") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      المشرف العلمي (إن وجد)
-                    </label>
-                    <input
-                      type="text"
-                      name="supervisorName"
-                      value={formData.supervisorName}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
-                      placeholder="اسم المشرف"
-                    />
-                  </div>
-                )}
+      {service.fields.includes("projectDeliveryDate") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            الموعد النهائي <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="date"
+            name="projectDeliveryDate"
+            value={formData.projectDeliveryDate}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.projectDeliveryDate
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.projectDeliveryDate && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.projectDeliveryDate}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("supervisorInstructions") && (
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      تعليمات المشرف
-                    </label>
-                    <textarea
-                      name="supervisorInstructions"
-                      value={formData.supervisorInstructions}
-                      onChange={handleInputChange}
-                      rows={2}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
-                      placeholder="أي تعليمات خاصة من المشرف..."
-                    />
-                  </div>
-                )}
+      {service.fields.includes("supervisorName") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            المشرف العلمي (إن وجد)
+          </label>
+          <input
+            type="text"
+            name="supervisorName"
+            value={formData.supervisorName}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
+            placeholder="اسم المشرف"
+          />
+        </div>
+      )}
 
-                {/* خدمة السير الذاتية */}
-                {service.fields.includes("cvFullName") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الاسم <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="cvFullName"
-                      value={formData.cvFullName}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.cvFullName ? "border-red-500" : "border-gray-200"
-                      }`}
-                    />
-                    {errors.cvFullName && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.cvFullName}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("supervisorInstructions") && (
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            تعليمات المشرف
+          </label>
+          <textarea
+            name="supervisorInstructions"
+            value={formData.supervisorInstructions}
+            onChange={handleInputChange}
+            rows={2}
+            className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
+            placeholder="أي تعليمات خاصة من المشرف..."
+          />
+        </div>
+      )}
 
-                {service.fields.includes("cvSpecialization") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      التخصص <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="cvSpecialization"
-                      value={formData.cvSpecialization}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.cvSpecialization
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.cvSpecialization && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.cvSpecialization}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {/* خدمة السير الذاتية */}
+      {service.fields.includes("cvFullName") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            الاسم <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="cvFullName"
+            value={formData.cvFullName}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.cvFullName ? "border-red-500" : "border-gray-200"
+            }`}
+          />
+          {errors.cvFullName && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.cvFullName}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("cvExperience") && (
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الخبرات <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      required
-                      name="cvExperience"
-                      value={formData.cvExperience}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.cvExperience
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                      placeholder="الخبرات السابقة..."
-                    />
-                    {errors.cvExperience && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.cvExperience}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("cvSpecialization") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            التخصص <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="cvSpecialization"
+            value={formData.cvSpecialization}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.cvSpecialization
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.cvSpecialization && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.cvSpecialization}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("cvSkills") && (
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      المهارات <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      required
-                      name="cvSkills"
-                      value={formData.cvSkills}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.cvSkills ? "border-red-500" : "border-gray-200"
-                      }`}
-                      placeholder="المهارات التقنية والشخصية..."
-                    />
-                    {errors.cvSkills && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.cvSkills}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("cvExperience") && (
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            الخبرات <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            required
+            name="cvExperience"
+            value={formData.cvExperience}
+            onChange={handleInputChange}
+            rows={3}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.cvExperience
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+            placeholder="الخبرات السابقة..."
+          />
+          {errors.cvExperience && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.cvExperience}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("cvCourses") && (
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الدورات التدريبية <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      required
-                      name="cvCourses"
-                      value={formData.cvCourses}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.cvCourses ? "border-red-500" : "border-gray-200"
-                      }`}
-                      placeholder="الدورات والشهادات..."
-                    />
-                    {errors.cvCourses && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.cvCourses}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("cvSkills") && (
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            المهارات <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            required
+            name="cvSkills"
+            value={formData.cvSkills}
+            onChange={handleInputChange}
+            rows={3}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.cvSkills ? "border-red-500" : "border-gray-200"
+            }`}
+            placeholder="المهارات التقنية والشخصية..."
+          />
+          {errors.cvSkills && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.cvSkills}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("cvLanguages") && (
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      اللغات <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="cvLanguages"
-                      value={formData.cvLanguages}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.cvLanguages
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                      placeholder="العربية (أم)، الإنجليزية (متقدم)..."
-                    />
-                    {errors.cvLanguages && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.cvLanguages}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("cvCourses") && (
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            الدورات التدريبية <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            required
+            name="cvCourses"
+            value={formData.cvCourses}
+            onChange={handleInputChange}
+            rows={3}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.cvCourses ? "border-red-500" : "border-gray-200"
+            }`}
+            placeholder="الدورات والشهادات..."
+          />
+          {errors.cvCourses && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.cvCourses}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("cvObjective") && (
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الهدف المهني <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      required
-                      name="cvObjective"
-                      value={formData.cvObjective}
-                      onChange={handleInputChange}
-                      rows={2}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.cvObjective
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                      placeholder="أهدافك المهنية..."
-                    />
-                    {errors.cvObjective && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.cvObjective}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("cvLanguages") && (
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            اللغات <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="cvLanguages"
+            value={formData.cvLanguages}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.cvLanguages
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+            placeholder="العربية (أم)، الإنجليزية (متقدم)..."
+          />
+          {errors.cvLanguages && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.cvLanguages}
+            </p>
+          )}
+        </div>
+      )}
 
-                {/* خدمة العروض التقديمية */}
-                {service.fields.includes("presentationTopic") && (
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      موضوع العرض <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="presentationTopic"
-                      value={formData.presentationTopic}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.presentationTopic
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.presentationTopic && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.presentationTopic}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("cvObjective") && (
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            الهدف المهني <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            required
+            name="cvObjective"
+            value={formData.cvObjective}
+            onChange={handleInputChange}
+            rows={2}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.cvObjective
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+            placeholder="أهدافك المهنية..."
+          />
+          {errors.cvObjective && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.cvObjective}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("presentationSlides") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      عدد الشرائح <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="number"
-                      name="presentationSlides"
-                      value={formData.presentationSlides}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.presentationSlides
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.presentationSlides && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.presentationSlides}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {/* خدمة العروض التقديمية */}
+      {service.fields.includes("presentationTopic") && (
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            موضوع العرض <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="presentationTopic"
+            value={formData.presentationTopic}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.presentationTopic
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.presentationTopic && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.presentationTopic}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("presentationContent") && (
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      النص أو المحتوى <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="file"
-                      accept=".pdf,.doc,.docx,.txt"
-                      onChange={(e) =>
-                        handleFileUpload(e, "presentationContent")
-                      }
-                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#00416A] file:text-white"
-                    />
-                    {errors.presentationContent && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.presentationContent}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("presentationSlides") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            عدد الشرائح <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="number"
+            name="presentationSlides"
+            value={formData.presentationSlides}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.presentationSlides
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.presentationSlides && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.presentationSlides}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("presentationLanguage") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      لغة العرض <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="presentationLanguage"
-                      value={formData.presentationLanguage}
-                      onChange={handleInputChange}
-                      required
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.presentationLanguage
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    >
-                      <option value="">اختر اللغة</option>
-                      <option value="ar">العربية</option>
-                      <option value="en">الإنجليزية</option>
-                      <option value="both">الاثنتين معاً</option>
-                    </select>
-                    {errors.presentationLanguage && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.presentationLanguage}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("presentationContent") && (
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            النص أو المحتوى <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="file"
+            accept=".pdf,.doc,.docx,.txt"
+            onChange={(e) => handleFileUpload(e, "presentationContent")}
+            className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#00416A] file:text-white"
+          />
+          {errors.presentationContent && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.presentationContent}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("presentationDeliveryDate") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الموعد النهائي <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="date"
-                      name="presentationDeliveryDate"
-                      value={formData.presentationDeliveryDate}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.presentationDeliveryDate
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.presentationDeliveryDate && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.presentationDeliveryDate}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("presentationLanguage") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            لغة العرض <span className="text-red-500">*</span>
+          </label>
+          <select
+            name="presentationLanguage"
+            value={formData.presentationLanguage}
+            onChange={handleInputChange}
+            required
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.presentationLanguage
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          >
+            <option value="">اختر اللغة</option>
+            <option value="ar">العربية</option>
+            <option value="en">الإنجليزية</option>
+            <option value="both">الاثنتين معاً</option>
+          </select>
+          {errors.presentationLanguage && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.presentationLanguage}
+            </p>
+          )}
+        </div>
+      )}
 
-                {/* خدمة تصميم بوسترات */}
-                {service.fields.includes("posterTitle") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      عنوان المشروع <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="posterTitle"
-                      value={formData.posterTitle}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.posterTitle
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.posterTitle && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.posterTitle}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("presentationDeliveryDate") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            الموعد النهائي <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="date"
+            name="presentationDeliveryDate"
+            value={formData.presentationDeliveryDate}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.presentationDeliveryDate
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.presentationDeliveryDate && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.presentationDeliveryDate}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("posterStudentName") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      اسم الطالب <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="posterStudentName"
-                      value={formData.posterStudentName}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.posterStudentName
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.posterStudentName && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.posterStudentName}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {/* خدمة تصميم بوسترات */}
+      {service.fields.includes("posterTitle") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            عنوان المشروع <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="posterTitle"
+            value={formData.posterTitle}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.posterTitle
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.posterTitle && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.posterTitle}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("posterUniversity") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      اسم الجامعة <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="posterUniversity"
-                      value={formData.posterUniversity}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.posterUniversity
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.posterUniversity && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.posterUniversity}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("posterStudentName") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            اسم الطالب <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="posterStudentName"
+            value={formData.posterStudentName}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.posterStudentName
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.posterStudentName && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.posterStudentName}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("posterLogo") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الشعار (إن وجد)
-                    </label>
-                    <input
-                      type="file"
-                      accept=".png,.jpg,.jpeg,.svg"
-                      onChange={(e) => handleFileUpload(e, "posterLogo")}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#00416A] file:text-white"
-                    />
-                  </div>
-                )}
+      {service.fields.includes("posterUniversity") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            اسم الجامعة <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="posterUniversity"
+            value={formData.posterUniversity}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.posterUniversity
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.posterUniversity && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.posterUniversity}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("posterSize") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      المقاس المطلوب <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="posterSize"
-                      value={formData.posterSize}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.posterSize ? "border-red-500" : "border-gray-200"
-                      }`}
-                      placeholder="مثال: A1, 50x70 سم"
-                    />
-                    {errors.posterSize && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.posterSize}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("posterLogo") && (
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            الشعار (إن وجد)
+          </label>
+          <input
+            type="file"
+            accept=".png,.jpg,.jpeg,.svg"
+            onChange={(e) => handleFileUpload(e, "posterLogo")}
+            className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#00416A] file:text-white"
+          />
+        </div>
+      )}
 
-                {/* خدمة الاستبيانات */}
-                {service.fields.includes("surveyTopic") && (
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      موضوع البحث <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="surveyTopic"
-                      value={formData.surveyTopic}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.surveyTopic
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.surveyTopic && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.surveyTopic}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("posterSize") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            المقاس المطلوب <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="posterSize"
+            value={formData.posterSize}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.posterSize ? "border-red-500" : "border-gray-200"
+            }`}
+            placeholder="مثال: A1, 50x70 سم"
+          />
+          {errors.posterSize && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.posterSize}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("surveyTarget") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الفئة المستهدفة <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      name="surveyTarget"
-                      value={formData.surveyTarget}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.surveyTarget
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.surveyTarget && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.surveyTarget}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {/* خدمة الاستبيانات */}
+      {service.fields.includes("surveyTopic") && (
+        <div className="col-span-1 md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            موضوع البحث <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="surveyTopic"
+            value={formData.surveyTopic}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.surveyTopic
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.surveyTopic && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.surveyTopic}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("surveyQuestionsCount") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      عدد الأسئلة المتوقع{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      required
-                      type="number"
-                      name="surveyQuestionsCount"
-                      value={formData.surveyQuestionsCount}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.surveyQuestionsCount
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    />
-                    {errors.surveyQuestionsCount && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.surveyQuestionsCount}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("surveyTarget") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            الفئة المستهدفة <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="text"
+            name="surveyTarget"
+            value={formData.surveyTarget}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.surveyTarget
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.surveyTarget && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.surveyTarget}
+            </p>
+          )}
+        </div>
+      )}
 
-                {service.fields.includes("surveyQuestionType") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      نوع الأسئلة <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="surveyQuestionType"
-                      value={formData.surveyQuestionType}
-                      onChange={handleInputChange}
-                      required
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.surveyQuestionType
-                          ? "border-red-500"
-                          : "border-gray-200"
-                      }`}
-                    >
-                      <option value="">اختر النوع</option>
-                      <option value="closed">مغلقة (اختيار من متعدد)</option>
-                      <option value="open">مفتوحة</option>
-                      <option value="mixed">مختلط</option>
-                    </select>
-                    {errors.surveyQuestionType && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.surveyQuestionType}
-                      </p>
-                    )}
-                  </div>
-                )}
+      {service.fields.includes("surveyQuestionsCount") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            عدد الأسئلة المتوقع{" "}
+            <span className="text-red-500">*</span>
+          </label>
+          <input
+            required
+            type="number"
+            name="surveyQuestionsCount"
+            value={formData.surveyQuestionsCount}
+            onChange={handleInputChange}
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.surveyQuestionsCount
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          />
+          {errors.surveyQuestionsCount && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.surveyQuestionsCount}
+            </p>
+          )}
+        </div>
+      )}
 
-                {/* حقول تطوير المواقع (إذا تم اختيارها) */}
-                {service.value === "web-development" && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        نوع الموقع <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        name="websiteType"
-                        value={formData.websiteType}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
-                      >
-                        <option value="">اختر النوع</option>
-                        <option value="personal">شخصي</option>
-                        <option value="commercial">تجاري</option>
-                        <option value="ecommerce">متجر إلكتروني</option>
-                        <option value="blog">مدونة</option>
-                        <option value="portfolio">معرض أعمال</option>
-                      </select>
-                    </div>
+      {service.fields.includes("surveyQuestionType") && (
+        <div className="col-span-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            نوع الأسئلة <span className="text-red-500">*</span>
+          </label>
+          <select
+            name="surveyQuestionType"
+            value={formData.surveyQuestionType}
+            onChange={handleInputChange}
+            required
+            className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
+              errors.surveyQuestionType
+                ? "border-red-500"
+                : "border-gray-200"
+            }`}
+          >
+            <option value="">اختر النوع</option>
+            <option value="closed">مغلقة (اختيار من متعدد)</option>
+            <option value="open">مفتوحة</option>
+            <option value="mixed">مختلط</option>
+          </select>
+          {errors.surveyQuestionType && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.surveyQuestionType}
+            </p>
+          )}
+        </div>
+      )}
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        عدد الصفحات المطلوبة
-                      </label>
-                      <input
-                        required
-                        type="number"
-                        name="pagesRequired"
-                        value={formData.pagesRequired}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
-                        placeholder="1"
-                      />
-                    </div>
+      {/* حقول تطوير المواقع (إذا تم اختيارها) */}
+      {service.value === "web-development" && (
+        <>
+          <div className="col-span-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              نوع الموقع <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="websiteType"
+              value={formData.websiteType}
+              onChange={handleInputChange}
+              required
+              className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
+            >
+              <option value="">اختر النوع</option>
+              <option value="personal">شخصي</option>
+              <option value="commercial">تجاري</option>
+              <option value="ecommerce">متجر إلكتروني</option>
+              <option value="blog">مدونة</option>
+              <option value="portfolio">معرض أعمال</option>
+            </select>
+          </div>
 
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        التقنيات المفضلة
-                      </label>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {[
-                          "WordPress",
-                          "HTML/CSS",
-                          "JavaScript",
-                          "React/Next.js",
-                          "Node.js",
-                        ].map((tech) => (
-                          <label
-                            key={tech}
-                            className="flex items-center gap-2 cursor-pointer"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={formData.technologies.includes(tech)}
-                              onChange={() => handleTechnologyChange(tech)}
-                              className="w-4 h-4 text-[#00416A] border-gray-300 rounded focus:ring-[#00416A]"
-                            />
-                            <span className="text-sm text-gray-700">
-                              {tech}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
+          <div className="col-span-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              عدد الصفحات المطلوبة
+            </label>
+            <input
+              required
+              type="number"
+              name="pagesRequired"
+              value={formData.pagesRequired}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
+              placeholder="1"
+            />
+          </div>
 
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        الصفحات المطلوبة
-                      </label>
-                      <textarea
-                        name="pagesRequired"
-                        value={formData.pagesRequired}
-                        onChange={handleInputChange}
-                        rows={4}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
-                        placeholder="صفحة رئيسية، صفحة عن الشركة، صفحة الخدمات، صفحة الاتصال..."
-                      />
-                    </div>
-
-                    <div className="flex items-center">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          name="hasDesign"
-                          checked={formData.hasDesign}
-                          onChange={handleInputChange}
-                          className="w-5 h-5 text-[#00416A] border-gray-300 rounded focus:ring-[#00416A]"
-                        />
-                        <span className="text-sm font-medium text-gray-700">
-                          يوجد تصميم جاهز
-                        </span>
-                      </label>
-                    </div>
-
-                    {formData.hasDesign && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          رفع ملف التصميم
-                        </label>
-                        <input
-                          type="file"
-                          accept=".pdf,.jpg,.jpeg,.png,.psd,.ai"
-                          onChange={(e) => handleFileUpload(e, "designFile")}
-                          className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#00416A] file:text-white"
-                        />
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {/* حقول كتابة الوظائف (العامة) */}
-                {service.value === "writing" && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        نوع الوظيفة <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        name="assignmentType"
-                        value={formData.assignmentType}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
-                      >
-                        <option value="">اختر النوع</option>
-                        <option value="research">بحث</option>
-                        <option value="report">تقرير</option>
-                        <option value="article">مقال</option>
-                        <option value="homework">حل واجب</option>
-                        <option value="presentation">عرض تقديمي</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        عدد الصفحات أو الكلمات
-                      </label>
-                      <input
-                        type="number"
-                        name="pagesOrWords"
-                        value={formData.pagesOrWords}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
-                        placeholder="1"
-                      />
-                    </div>
-
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        الموضوع أو المجال{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        required
-                        type="text"
-                        name="subject"
-                        value={formData.subject}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
-                        placeholder="أدخل الموضوع أو المجال"
-                      />
-                    </div>
-
-                    <div className="flex items-center">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          name="needsReferences"
-                          checked={formData.needsReferences}
-                          onChange={handleInputChange}
-                          className="w-5 h-5 text-[#00416A] border-gray-300 rounded focus:ring-[#00416A]"
-                        />
-                        <span className="text-sm font-medium text-gray-700">
-                          يحتاج مراجع (رسوم إضافية)
-                        </span>
-                      </label>
-                    </div>
-
-                    {formData.needsReferences && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          رفع ملف المراجع (اختياري)
-                        </label>
-                        <input
-                          type="file"
-                          accept=".pdf,.doc,.docx,.txt"
-                          onChange={(e) => handleFileUpload(e, "referenceFile")}
-                          className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#00416A] file:text-white"
-                        />
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {/* حقول إعداد الأبحاث (العامة) */}
-                {service.value === "research" && (
-                  <>
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        عنوان البحث <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        required
-                        type="text"
-                        name="researchTitle"
-                        value={formData.researchTitle}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
-                        placeholder="أدخل عنوان البحث"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        المنهجية المطلوبة
-                      </label>
-                      <textarea
-                        name="methodology"
-                        value={formData.methodology}
-                        onChange={handleInputChange}
-                        rows={3}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
-                        placeholder="وصف المنهجية المطلوبة..."
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        عدد المصادر
-                      </label>
-                      <input
-                        type="number"
-                        name="sourceCount"
-                        value={formData.sourceCount}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
-                        placeholder="0"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        تنسيق الاقتباس
-                      </label>
-                      <select
-                        name="citationFormat"
-                        value={formData.citationFormat}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
-                      >
-                        <option value="">اختر التنسيق</option>
-                        <option value="APA">APA</option>
-                        <option value="MLA">MLA</option>
-                        <option value="Chicago">Chicago</option>
-                        <option value="Harvard">Harvard</option>
-                        <option value="IEEE">IEEE</option>
-                      </select>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="flex justify-between gap-4 mt-8">
-                <button
-                  type="button"
-                  onClick={goToPrevStep}
-                  className="bg-gray-200 text-gray-700 px-8 py-3 rounded-xl hover:bg-gray-300 transition-all font-semibold"
+          <div className="col-span-1 md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              التقنيات المفضلة
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {[
+                "WordPress",
+                "HTML/CSS",
+                "JavaScript",
+                "React/Next.js",
+                "Node.js",
+              ].map((tech) => (
+                <label
+                  key={tech}
+                  className="flex items-center gap-2 cursor-pointer"
                 >
-                  السابق
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmation(true)}
-                  className="bg-[#00416A] text-white px-8 py-3 rounded-xl hover:bg-opacity-90 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                >
-                  مراجعة الطلب
-                </button>
-              </div>
+                  <input
+                    type="checkbox"
+                    checked={formData.technologies.includes(tech)}
+                    onChange={() => handleTechnologyChange(tech)}
+                    className="w-4 h-4 text-[#00416A] border-gray-300 rounded focus:ring-[#00416A]"
+                  />
+                  <span className="text-sm text-gray-700">{tech}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="col-span-1 md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              الصفحات المطلوبة
+            </label>
+            <textarea
+              name="pagesRequired"
+              value={formData.pagesRequired}
+              onChange={handleInputChange}
+              rows={4}
+              className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
+              placeholder="صفحة رئيسية، صفحة عن الشركة، صفحة الخدمات، صفحة الاتصال..."
+            />
+          </div>
+
+          <div className="col-span-1 md:col-span-2 flex items-center">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="hasDesign"
+                checked={formData.hasDesign}
+                onChange={handleInputChange}
+                className="w-5 h-5 text-[#00416A] border-gray-300 rounded focus:ring-[#00416A]"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                يوجد تصميم جاهز
+              </span>
+            </label>
+          </div>
+
+          {formData.hasDesign && (
+            <div className="col-span-1 md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                رفع ملف التصميم
+              </label>
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.psd,.ai"
+                onChange={(e) => handleFileUpload(e, "designFile")}
+                className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#00416A] file:text-white"
+              />
             </div>
           )}
+        </>
+      )}
+
+      {/* حقول كتابة الوظائف (العامة) */}
+      {service.value === "writing" && (
+        <>
+          <div className="col-span-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              نوع الوظيفة <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="assignmentType"
+              value={formData.assignmentType}
+              onChange={handleInputChange}
+              required
+              className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
+            >
+              <option value="">اختر النوع</option>
+              <option value="research">بحث</option>
+              <option value="report">تقرير</option>
+              <option value="article">مقال</option>
+              <option value="homework">حل واجب</option>
+              <option value="presentation">عرض تقديمي</option>
+            </select>
+          </div>
+
+          <div className="col-span-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              عدد الصفحات أو الكلمات
+            </label>
+            <input
+              type="number"
+              name="pagesOrWords"
+              value={formData.pagesOrWords}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
+              placeholder="1"
+            />
+          </div>
+
+          <div className="col-span-1 md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              الموضوع أو المجال{" "}
+              <span className="text-red-500">*</span>
+            </label>
+            <input
+              required
+              type="text"
+              name="subject"
+              value={formData.subject}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
+              placeholder="أدخل الموضوع أو المجال"
+            />
+          </div>
+
+          <div className="col-span-1 md:col-span-2 flex items-center">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="needsReferences"
+                checked={formData.needsReferences}
+                onChange={handleInputChange}
+                className="w-5 h-5 text-[#00416A] border-gray-300 rounded focus:ring-[#00416A]"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                يحتاج مراجع (رسوم إضافية)
+              </span>
+            </label>
+          </div>
+
+          {formData.needsReferences && (
+            <div className="col-span-1 md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                رفع ملف المراجع (اختياري)
+              </label>
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx,.txt"
+                onChange={(e) => handleFileUpload(e, "referenceFile")}
+                className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#00416A] file:text-white"
+              />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* حقول إعداد الأبحاث (العامة) */}
+      {service.value === "research" && (
+        <>
+          <div className="col-span-1 md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              عنوان البحث <span className="text-red-500">*</span>
+            </label>
+            <input
+              required
+              type="text"
+              name="researchTitle"
+              value={formData.researchTitle}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
+              placeholder="أدخل عنوان البحث"
+            />
+          </div>
+
+          <div className="col-span-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              المنهجية المطلوبة
+            </label>
+            <textarea
+              name="methodology"
+              value={formData.methodology}
+              onChange={handleInputChange}
+              rows={3}
+              className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
+              placeholder="وصف المنهجية المطلوبة..."
+            />
+          </div>
+
+          <div className="col-span-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              عدد المصادر
+            </label>
+            <input
+              type="number"
+              name="sourceCount"
+              value={formData.sourceCount}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
+              placeholder="0"
+            />
+          </div>
+
+          <div className="col-span-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              تنسيق الاقتباس
+            </label>
+            <select
+              name="citationFormat"
+              value={formData.citationFormat}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-[#00416A]"
+            >
+              <option value="">اختر التنسيق</option>
+              <option value="APA">APA</option>
+              <option value="MLA">MLA</option>
+              <option value="Chicago">Chicago</option>
+              <option value="Harvard">Harvard</option>
+              <option value="IEEE">IEEE</option>
+            </select>
+          </div>
+        </>
+      )}
+    </div>
+
+    <div className="flex justify-between gap-4 mt-8">
+      <button
+        type="button"
+        onClick={goToPrevStep}
+        className="bg-gray-200 text-gray-700 px-8 py-3 rounded-xl hover:bg-gray-300 transition-all font-semibold"
+      >
+        السابق
+      </button>
+      <button
+        type="button"
+        onClick={() => setShowConfirmation(true)}
+        className="bg-[#00416A] text-white px-8 py-3 rounded-xl hover:bg-opacity-90 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+      >
+        مراجعة الطلب
+      </button>
+    </div>
+  </div>
+)}
         </form>
       </div>
     </div>
