@@ -1319,7 +1319,7 @@ const RequestFormClient: React.FC = () => {
                       </div>
                     )}
 
-                    {formData.isSharedAssignment && formData.hasPartners && (
+                    {formData.isSharedAssignment || formData.hasPartners && (
                       <div className="sm:col-span-2">
                         <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                           معلومات الشركاء <span className="text-red-500">*</span>
@@ -1329,7 +1329,7 @@ const RequestFormClient: React.FC = () => {
                           value={formData.partnersInfo}
                           onChange={handleInputChange}
                           rows={3}
-                          placeholder="الرجاء إدخال الأسماء الكاملة والأرقام الجامعية ومعلومات الاتصال للشركاء..."
+                          placeholder="الرجاء إدخال الأسماء الكاملة والأرقام الجامعية ومعلومات الاتصال لكل شريك و ذلك حفاظاً على استفادتكم من الخدمة..."
                           className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.partnersInfo
                               ? "border-red-500"
                               : "border-gray-200"
