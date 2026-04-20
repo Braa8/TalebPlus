@@ -2,7 +2,7 @@
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { adminDb } from '@/lib/firebaseAdmin';
-import { authOptions } from '../../api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import AdminEmailsClient from './AdminEmailsClient';
 
 export default async function AdminEmailsPage() {
