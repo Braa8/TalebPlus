@@ -2,25 +2,19 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../api/auth/[...nextauth]/route';
-import { rateLimitByIdentifier } from '../../../lib/rateLimit';
-import { sanitizeInput } from '../../../lib/sanitize';
+import { authOptions } from '@/lib/authOptions'; // تأكد من وجود هذا الملف
+import { rateLimitByIdentifier } from '@/lib/rateLimit';
+import { sanitizeInput } from '@/lib/sanitize';
 
 // تعريف نوع بيانات الطلب المستلمة من العميل
 interface FormDataPayload {
-  [key: string]: string | number | boolean | null | undefined | string[];
+  [key: string]: string | number | boolean | null | undefined | string[] | File;
   serviceType: string;
   fullName: string;
   email: string;
   phone: string;
   urgentDelivery: boolean;
   budget: string;
-}
-
-interface RequestBody {
-  formData: FormDataPayload;
-  estimatedPrice: number;
-  priceBreakdown: string;
 }
 
 // نسخة من مصفوفة الخدمات مع الحقول (fields) - يجب أن تتطابق مع الموجودة في RequestFormClient
@@ -48,6 +42,10 @@ const services: ServiceInfo[] = [
       "programCode",
       "subjectName",
       "subjectCode",
+      "isSharedAssignment",
+      "hasPartners",
+      "partnersInfo",
+      "homeWorkFile",
     ],
   },
   {
@@ -116,7 +114,7 @@ const services: ServiceInfo[] = [
   },
 ];
 
-// دالة للحصول على تسمية الخدمة العربية (مع دعم الباقات)
+// دالة للحصول على تسمية الخدمة العربية
 const getServiceLabel = (value: string, packageName?: string): string => {
   if (value === 'packages' && packageName) {
     return packageName;
@@ -140,6 +138,7 @@ const getFieldLabel = (field: string): string => {
     targetLanguage: "لغة الترجمة الهدف",
     deliveryDate: "الموعد النهائي",
     researchFile: "ملف البحث",
+    homeWorkFile: "ملف الوظيفة",
     universityName: "اسم الجامعة",
     formattingTemplate: "نموذج التنسيق",
     researchDeliveryDate: "الموعد النهائي",
@@ -189,10 +188,8 @@ const getFieldLabel = (field: string): string => {
   return labels[field] || field;
 };
 
-// دالة مساعدة لتحويل قيمة منطقية إلى نعم/لا
 const formatBoolean = (value: boolean): string => (value ? 'نعم' : 'لا');
 
-// دالة لتنسيق قيمة الحقل
 const formatFieldValue = (value: unknown): string => {
   if (value === undefined || value === null || value === '') return 'غير مذكور';
   if (typeof value === 'boolean') return formatBoolean(value);
@@ -200,7 +197,6 @@ const formatFieldValue = (value: unknown): string => {
   return String(value);
 };
 
-// دالة لبناء جدول HTML من قائمة الحقول
 const buildTableFromFields = (
   data: FormDataPayload,
   fields: string[],
@@ -210,7 +206,7 @@ const buildTableFromFields = (
   for (const field of fields) {
     if (excludedFields.includes(field)) continue;
     const value = data[field];
-    if (value === undefined) continue;
+    if (value === undefined || value instanceof File) continue; // لا نعرض الملفات في الجدول
     html += `
       <tr style="border-bottom: 1px solid #ddd;">
         <td style="padding: 8px; font-weight: bold; width: 200px; background: #f9f9f9;">${getFieldLabel(field)}</td>
@@ -222,7 +218,6 @@ const buildTableFromFields = (
   return html;
 };
 
-// دالة خاصة لتعقيم جميع الحقول النصية في FormDataPayload
 function sanitizeFormData(data: FormDataPayload): FormDataPayload {
   const result: FormDataPayload = { ...data };
   for (const key in result) {
@@ -241,10 +236,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
   }
 
-  // 2. تطبيق Rate Limiting بناءً على معرف المستخدم
+  // 2. تطبيق Rate Limiting
   const allowed = await rateLimitByIdentifier(session.user.id, {
-    windowMs: 60 * 60 * 1000, // 1 ساعة
-    max: 10,                  // 10 طلبات لكل مستخدم في الساعة
+    windowMs: 60 * 60 * 1000,
+    max: 10,
   });
   if (!allowed) {
     return NextResponse.json(
@@ -254,7 +249,6 @@ export async function POST(request: Request) {
   }
 
   try {
-    // التحقق من وجود متغيرات البيئة
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.error('Missing email environment variables');
       return NextResponse.json(
@@ -263,10 +257,50 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = (await request.json()) as RequestBody;
-    const { formData, estimatedPrice, priceBreakdown } = body;
+    // ✅ استخدام formData() بدلاً من json()
+    const form = await request.formData();
 
-    // تعقيم جميع الحقول النصية في formData (لحماية من XSS)
+    const rawData: Record<string, unknown> = {};
+    let estimatedPrice = 0;
+    let priceBreakdown = "";
+
+    // قائمة بأسماء حقول الملفات
+    const fileFieldNames = [
+      "translationFile",
+      "researchFile",
+      "formattingTemplate",
+      "presentationContent",
+      "designFile",
+      "referenceFile",
+      "posterLogo",
+      "homeWorkFile",
+    ];
+
+    const uploadedFiles: { field: string; name: string }[] = [];
+
+    form.forEach((value, key) => {
+      if (key === "estimatedPrice") {
+        estimatedPrice = parseInt(value as string) || 0;
+      } else if (key === "priceBreakdown") {
+        priceBreakdown = value as string;
+      } else if (value instanceof File) {
+        // نحتفظ بأسماء الملفات فقط للبريد
+        uploadedFiles.push({ field: key, name: value.name });
+        // لا نضيف الملف نفسه إلى rawData (لن نرسله في البريد)
+      } else if (key === "technologies") {
+        try {
+          rawData[key] = JSON.parse(value as string);
+        } catch {
+          rawData[key] = [];
+        }
+      } else if (value === "true" || value === "false") {
+        rawData[key] = value === "true";
+      } else {
+        rawData[key] = value;
+      }
+    });
+
+    const formData = rawData as unknown as FormDataPayload;
     const sanitizedFormData = sanitizeFormData(formData);
 
     // إعداد ناقل البريد
@@ -280,18 +314,15 @@ export async function POST(request: Request) {
 
     await transporter.verify();
 
-    // الحصول على معلومات الخدمة
     const serviceInfo = services.find((s) => s.value === sanitizedFormData.serviceType);
     if (!serviceInfo) {
       return NextResponse.json({ error: 'خدمة غير معروفة' }, { status: 400 });
     }
 
-    // تمرير packageName إن وجد (للباقات)
     const serviceLabel = getServiceLabel(sanitizedFormData.serviceType, sanitizedFormData.packageName as string | undefined);
     const urgentDelivery = formatBoolean(sanitizedFormData.urgentDelivery);
     const hasBudget = sanitizedFormData.budget ? `${sanitizedFormData.budget} ل.س` : 'غير مذكور';
 
-    // الحقول المشتركة (نعرضها دائماً)
     const commonFieldsHtml = `
       <table dir="rtl" style="width:100%; border-collapse: collapse; margin-bottom: 15px;">
          <tr><td style="padding:8px; font-weight:bold; width:200px; background:#f9f9f9;">الاسم الكامل</td><td style="padding:8px;">${sanitizedFormData.fullName}</td></tr>
@@ -303,43 +334,18 @@ export async function POST(request: Request) {
        </table>
     `;
 
-    // الحقول الخاصة بالخدمة (نستثني الحقول المشتركة)
     const excludedCommon = ['fullName', 'email', 'phone', 'serviceType', 'urgentDelivery', 'budget'];
-    const serviceFields = serviceInfo.fields.filter(f => !excludedCommon.includes(f) && !f.includes('File'));
+    const serviceFields = serviceInfo.fields.filter(f => !excludedCommon.includes(f) && !fileFieldNames.includes(f));
 
     const serviceFieldsHtml = serviceFields.length > 0
       ? buildTableFromFields(sanitizedFormData, serviceFields)
       : '<p>لا توجد تفاصيل إضافية محددة.</p>';
 
-    // --- قسم الملفات المرفوعة (روابط) ---
-    const attachmentFields = [
-      'translationFileUrl',
-      'researchFileUrl',
-      'formattingTemplateUrl',
-      'presentationContentUrl',
-      'designFileUrl',
-      'referenceFileUrl',
-      'posterLogoUrl',
-    ];
-    const attachmentsHtml = attachmentFields
-      .filter(field => sanitizedFormData[field])
-      .map(field => {
-        const originalField = field.replace('Url', '');
-        const label = getFieldLabel(originalField);
-        const url = sanitizedFormData[field] as string;
-        return `
-          <p style="margin: 8px 0;">
-            <strong>${label}:</strong>
-            <a href="${url}" target="_blank" style="color: #00416A;">تحميل الملف</a>
-          </p>
-        `;
-      })
-      .join('');
-    const attachmentsSection = attachmentsHtml
-      ? `<h3>📎 الملفات المرفوعة</h3>${attachmentsHtml}`
+    // قسم الملفات المرفوعة (أسماء فقط)
+    const attachmentsSection = uploadedFiles.length > 0
+      ? `<h3>📎 ملفات مرفقة (${uploadedFiles.length})</h3><ul>${uploadedFiles.map(f => `<li><strong>${getFieldLabel(f.field)}:</strong> ${f.name}</li>`).join('')}</ul>`
       : '';
 
-    // بناء HTML النهائي
     const htmlContent = `
       <!DOCTYPE html>
       <html dir="rtl">
@@ -354,6 +360,7 @@ export async function POST(request: Request) {
           td { padding: 8px; border-bottom: 1px solid #eee; }
           .price { background: #eef7ff; padding: 15px; border-radius: 5px; font-size: 18px; border-right: 4px solid #00416A; }
           .footer { margin-top: 30px; font-size: 12px; color: #777; text-align: center; }
+          ul { padding-right: 20px; }
         </style>
       </head>
       <body>

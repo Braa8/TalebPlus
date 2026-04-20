@@ -38,9 +38,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F0EAD6] flex items-center justify-center py-12 px-4">
+    <div dir="rtl" className="min-h-screen bg-[#F0EAD6] flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full bg-white p-10 rounded-lg shadow-lg">
-        <h2 className="text-3xl font-bold text-[#00416A] text-center mb-8">
+        <h2 dir="rtl" className="text-3xl font-bold text-[#00416A] text-center mb-8">
           تسجيل الدخول
         </h2>
 

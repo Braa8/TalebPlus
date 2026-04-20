@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
-import { authOptions } from '../api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions'; // تأكد من وجود هذا الملف
 import RequestFormClient from './RequestFormClient';
 
 export default async function RequestFormPage() {

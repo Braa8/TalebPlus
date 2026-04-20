@@ -37,6 +37,7 @@ interface FormData {
   isSharedAssignment: boolean; // is it a shared assignment
   hasPartners: boolean; // has partners
   partnersInfo: string; // partners information
+  homeWorkFile: File | null;
 
   // حقول تنسيق وتنضيد البحوث
   researchFile: File | null;
@@ -142,7 +143,7 @@ const services: ServiceOption[] = [
     description: "حل واجبات ومشاريع الجامعة الافتراضية السورية",
     price: "75000-150000 حسب متطلبات الوظيفة",
     detailsDescription:
-      "خدمة مخصصة للجامعة الافتراضية السورية. مدة التسليم القصوى 3 أيام.",
+      "خدمة مخصصة للجامعة الافتراضية السورية. مدة التسليم القصوى 10 أيام.",
     fields: [
       "fullNameTriple",
       "universityId",
@@ -153,6 +154,10 @@ const services: ServiceOption[] = [
       "subjectName",
       "subjectCode",
       "homeWorkDetails",
+      "isSharedAssignment",
+      "hasPartners",
+      "partnersInfo",
+      "homeWorkFile"
     ],
   },
   {
@@ -297,6 +302,7 @@ const optionalFields = [
   "designFile",
   "supervisorInstructions",
   "supervisorName",
+  "homeWorkFile",
 ];
 
 // دالة مساعدة لإنشاء كائن فارغ من FormData
@@ -323,6 +329,7 @@ const createEmptyFormData = (): FormData => ({
   isSharedAssignment: false,
   hasPartners: false,
   partnersInfo: "",
+  homeWorkFile: null,
   researchFile: null,
   universityName: "",
   formattingTemplate: null,
@@ -375,12 +382,12 @@ const createEmptyFormData = (): FormData => ({
 const filterFormDataForService = (data: FormData, serviceType: string): FormData => {
   const service = services.find((s) => s.value === serviceType);
   if (!service) return data;
-  
+
   const allowedFields = new Set([
     "fullName", "email", "phone", "urgentDelivery", "budget", "serviceType",
     ...service.fields,
   ]);
-  
+
   const newData = createEmptyFormData();
   // نسخ الحقول المسموحة فقط
   Object.keys(data).forEach((key) => {
@@ -396,28 +403,30 @@ const filterFormDataForService = (data: FormData, serviceType: string): FormData
   newData.urgentDelivery = data.urgentDelivery;
   newData.budget = data.budget;
   newData.serviceType = serviceType;
-  
+
   return newData;
 };
 
 const RequestFormClient: React.FC = () => {
   // تهيئة الحالة بالقيم الافتراضية فقط
   const [formData, setFormData] = useState<FormData>(createEmptyFormData());
+  const [isClientReady, setIsClientReady] = useState(false);
   // مراجع لعناصر input file لإعادة تعيينها يدويًا
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   // تحميل البيانات من localStorage بعد تحميل المكون (client-side فقط)
   useEffect(() => {
-    const savedData = localStorage.getItem("requestFormDraft");
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        setFormData((prev) => ({ ...prev, ...parsed }));
-      } catch (e) {
-        console.error("Failed to load draft", e);
-      }
+  const savedData = localStorage.getItem("requestFormDraft");
+  if (savedData) {
+    try {
+      const parsed = JSON.parse(savedData);
+      setFormData((prev) => ({ ...prev, ...parsed }));
+    } catch (e) {
+      console.error("Failed to load draft", e);
     }
-  }, []);
+  }
+  setIsClientReady(true); // 
+}, []);
 
   // حالة السعر التقديري
   const [estimatedPrice, setEstimatedPrice] = useState<number>(0);
@@ -461,7 +470,7 @@ const RequestFormClient: React.FC = () => {
 
     let basePrice = 0;
     const priceStr = service.price;
-    
+
     if (priceStr.includes('-')) {
       const [lower] = priceStr.split('-');
       basePrice = parseInt(lower.replace(/[^\d]/g, '')) || 0;
@@ -559,10 +568,10 @@ const RequestFormClient: React.FC = () => {
   ) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 20 * 1024 * 1024) {
+      if (file.size > 40 * 1024 * 1024) {
         setErrors((prev) => ({
           ...prev,
-          [fieldName]: "حجم الملف يتجاوز الحد الأقصى (20 ميجابايت)",
+          [fieldName]: "حجم الملف يتجاوز الحد الأقصى (40 ميجابايت)",
         }));
         return;
       }
@@ -615,7 +624,7 @@ const RequestFormClient: React.FC = () => {
     try {
       // استخدام FormData لإرسال الملفات بشكل صحيح
       const payload = new FormData();
-      
+
       // إضافة جميع الحقول النصية والمنطقية
       Object.entries(formData).forEach(([key, value]) => {
         if (value instanceof File) {
@@ -628,7 +637,7 @@ const RequestFormClient: React.FC = () => {
           payload.append(key, String(value));
         }
       });
-      
+
       payload.append("estimatedPrice", String(estimatedPrice));
       payload.append("priceBreakdown", priceBreakdown);
 
@@ -660,17 +669,17 @@ const RequestFormClient: React.FC = () => {
       { label: "المعلومات", icon: "📋" },
       { label: "التفاصيل", icon: "⚙️" },
     ];
+    
     return (
       <div className="mb-8">
         <div className="flex items-center justify-between">
           {steps.map((step, index) => (
             <div key={step.label} className="flex flex-col items-center flex-1">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold transition-colors ${
-                  index <= currentStep
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold transition-colors ${index <= currentStep
                     ? "bg-[#00416A] text-white"
                     : "bg-gray-200 text-gray-500"
-                }`}
+                  }`}
               >
                 {step.icon}
               </div>
@@ -687,6 +696,17 @@ const RequestFormClient: React.FC = () => {
       </div>
     );
   };
+
+  if (!isClientReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F0EAD6]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00416A] mx-auto mb-4"></div>
+          <p className="text-gray-600">جاري تحميل النموذج...</p>
+        </div>
+      </div>
+    );
+  }
 
   // عرض شاشة التأكيد
   if (showConfirmation) {
@@ -723,27 +743,16 @@ const RequestFormClient: React.FC = () => {
                   <p className="text-red-600 font-semibold">تسليم عاجل</p>
                 )}
               </div>
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h2 className="text-xl font-semibold text-[#00416A] mb-3">
-                  السعر التقديري
-                </h2>
-                <div className="text-2xl font-bold text-[#00416A] mb-2">
-                  {estimatedPrice.toLocaleString()} ل.س
-                </div>
-                <pre className="text-sm text-gray-600 whitespace-pre-wrap">
-                  {priceBreakdown}
-                </pre>
-              </div>
+              
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={sendEmail}
                 disabled={loading}
-                className={`flex-1 py-4 px-6 rounded-xl transition-all font-semibold ${
-                  loading
+                className={`flex-1 py-4 px-6 rounded-xl transition-all font-semibold ${loading
                     ? 'bg-gray-400 cursor-not-allowed text-white'
                     : 'bg-[#00416A] hover:bg-opacity-90 text-white'
-                }`}
+                  }`}
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -796,10 +805,7 @@ const RequestFormClient: React.FC = () => {
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border-r-4 border-[#00416A]">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
-                <h2 className="text-sm text-gray-500">السعر التقديري</h2>
-                <div className="text-3xl font-bold text-[#00416A]">
-                  {estimatedPrice.toLocaleString()} ل.س
-                </div>
+                
                 <p className="text-xs text-gray-500 mt-1">
                   * السعر يزداد 50% في حالة التسليم العاجل
                 </p>
@@ -855,11 +861,10 @@ const RequestFormClient: React.FC = () => {
                   return (
                     <label
                       key={s.value}
-                      className={`relative block p-6 rounded-2xl border-2 cursor-pointer transition-all ${
-                        formData.serviceType === s.value
+                      className={`relative block p-6 rounded-2xl border-2 cursor-pointer transition-all ${formData.serviceType === s.value
                           ? "border-[#00416A] bg-blue-50 shadow-lg"
                           : "border-gray-200 hover:border-gray-300 bg-white"
-                      }`}
+                        }`}
                     >
                       <input
                         type="radio"
@@ -922,9 +927,8 @@ const RequestFormClient: React.FC = () => {
                     value={formData.fullName}
                     onChange={handleInputChange}
                     required
-                    className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] transition-all ${
-                      errors.fullName ? "border-red-500" : "border-gray-200"
-                    }`}
+                    className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] transition-all ${errors.fullName ? "border-red-500" : "border-gray-200"
+                      }`}
                     placeholder="أدخل اسمك الكامل"
                   />
                   {errors.fullName && (
@@ -943,9 +947,8 @@ const RequestFormClient: React.FC = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     required
-                    className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] transition-all ${
-                      errors.email ? "border-red-500" : "border-gray-200"
-                    }`}
+                    className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] transition-all ${errors.email ? "border-red-500" : "border-gray-200"
+                      }`}
                     placeholder="example@domain.com"
                   />
                   {errors.email && (
@@ -962,9 +965,8 @@ const RequestFormClient: React.FC = () => {
                     value={formData.phone}
                     onChange={handleInputChange}
                     required
-                    className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] transition-all ${
-                      errors.phone ? "border-red-500" : "border-gray-200"
-                    }`}
+                    className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] transition-all ${errors.phone ? "border-red-500" : "border-gray-200"
+                      }`}
                     placeholder="09XX XXX XXX"
                   />
                   {errors.phone && (
@@ -1033,10 +1035,10 @@ const RequestFormClient: React.FC = () => {
               </div>
 
               {/* عرض الحقول ديناميكياً حسب الخدمة */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-5 sm:gap-6">
                 {service.fields.includes("fullNameTriple") && (
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                       الاسم الثلاثي الكامل{" "}
                       <span className="text-red-500">*</span>
                     </label>
@@ -1046,14 +1048,13 @@ const RequestFormClient: React.FC = () => {
                       name="fullNameTriple"
                       value={formData.fullNameTriple}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.fullNameTriple
+                      className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.fullNameTriple
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.fullNameTriple && (
-                      <p className="text-red-500 text-sm mt-1">
+                      <p className="text-red-500 text-xs sm:text-sm mt-1">
                         {errors.fullNameTriple}
                       </p>
                     )}
@@ -1062,7 +1063,7 @@ const RequestFormClient: React.FC = () => {
 
                 {service.fields.includes("universityId") && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                       الرقم الجامعي <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -1071,14 +1072,13 @@ const RequestFormClient: React.FC = () => {
                       name="universityId"
                       value={formData.universityId}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.universityId
+                      className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.universityId
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.universityId && (
-                      <p className="text-red-500 text-sm mt-1">
+                      <p className="text-red-500 text-xs sm:text-sm mt-1">
                         {errors.universityId}
                       </p>
                     )}
@@ -1087,7 +1087,7 @@ const RequestFormClient: React.FC = () => {
 
                 {service.fields.includes("classNumber") && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                       رقم الصف <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -1096,14 +1096,13 @@ const RequestFormClient: React.FC = () => {
                       name="classNumber"
                       value={formData.classNumber}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.classNumber
+                      className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.classNumber
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.classNumber && (
-                      <p className="text-red-500 text-sm mt-1">
+                      <p className="text-red-500 text-xs sm:text-sm mt-1">
                         {errors.classNumber}
                       </p>
                     )}
@@ -1112,7 +1111,7 @@ const RequestFormClient: React.FC = () => {
 
                 {service.fields.includes("professorName") && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                       اسم الدكتور <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -1121,14 +1120,13 @@ const RequestFormClient: React.FC = () => {
                       name="professorName"
                       value={formData.professorName}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.professorName
+                      className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.professorName
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.professorName && (
-                      <p className="text-red-500 text-sm mt-1">
+                      <p className="text-red-500 text-xs sm:text-sm mt-1">
                         {errors.professorName}
                       </p>
                     )}
@@ -1137,7 +1135,7 @@ const RequestFormClient: React.FC = () => {
 
                 {service.fields.includes("programName") && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                       البرنامج <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -1146,14 +1144,13 @@ const RequestFormClient: React.FC = () => {
                       name="programName"
                       value={formData.programName}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.programName
+                      className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.programName
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.programName && (
-                      <p className="text-red-500 text-sm mt-1">
+                      <p className="text-red-500 text-xs sm:text-sm mt-1">
                         {errors.programName}
                       </p>
                     )}
@@ -1162,7 +1159,7 @@ const RequestFormClient: React.FC = () => {
 
                 {service.fields.includes("programCode") && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                       رمز البرنامج <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -1171,14 +1168,13 @@ const RequestFormClient: React.FC = () => {
                       name="programCode"
                       value={formData.programCode}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.programCode
+                      className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.programCode
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.programCode && (
-                      <p className="text-red-500 text-sm mt-1">
+                      <p className="text-red-500 text-xs sm:text-sm mt-1">
                         {errors.programCode}
                       </p>
                     )}
@@ -1187,7 +1183,7 @@ const RequestFormClient: React.FC = () => {
 
                 {service.fields.includes("subjectName") && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                       اسم المادة <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -1196,22 +1192,21 @@ const RequestFormClient: React.FC = () => {
                       name="subjectName"
                       value={formData.subjectName}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.subjectName
+                      className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.subjectName
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.subjectName && (
-                      <p className="text-red-500 text-sm mt-1">
+                      <p className="text-red-500 text-xs sm:text-sm mt-1">
                         {errors.subjectName}
                       </p>
                     )}
                   </div>
                 )}
                 {service.fields.includes("homeWorkDetails") && (
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                       عنوان الوظيفة و ملخص عن المتطلبات المرفقة <span className="text-red-500">*</span>
                     </label>
                     <textarea
@@ -1220,49 +1215,62 @@ const RequestFormClient: React.FC = () => {
                       value={formData.homeWorkDetails}
                       onChange={handleInputChange}
                       rows={3}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.homeWorkDetails
+                      className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.homeWorkDetails
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.homeWorkDetails && (
-                      <p className="text-red-500 text-sm mt-1">
+                      <p className="text-red-500 text-xs sm:text-sm mt-1">
                         {errors.homeWorkDetails}
                       </p>
                     )}
+                    <div className="mt-3">
+                      <input
+                        required
+                        type="file"
+                        accept=".pdf,.doc,.docx,.txt"
+                        onChange={(e) => handleFileUpload(e, "homeWorkFile")}
+                        className="w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-[#00416A] file:text-white hover:file:bg-opacity-90 text-sm sm:text-base"
+                      />
+                      {errors.homeWorkFile && (
+                        <p className="text-red-500 text-xs sm:text-sm mt-1">
+                          {errors.homeWorkFile}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
 
                 {/* Dynamic fields for shared assignment */}
                 {service.fields.includes("homeWorkDetails") && (
                   <>
-                    <div className="col-span-2">
-                      <label className="flex items-center space-x-3 space-x-reverse">
+                    <div className="sm:col-span-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="checkbox"
                           name="isSharedAssignment"
                           checked={formData.isSharedAssignment}
                           onChange={handleInputChange}
-                          className="w-5 h-5 text-[#00416A] border-gray-300 rounded focus:ring-[#00416A]"
+                          className="w-4 h-4 sm:w-5 sm:h-5 text-[#00416A] border-gray-300 rounded focus:ring-[#00416A]"
                         />
-                        <span className="text-sm font-medium text-gray-700 mr-2">
+                        <span className="text-xs sm:text-sm font-medium text-gray-700">
                           هل هذه مهمة مشتركة؟
                         </span>
                       </label>
                     </div>
 
                     {formData.isSharedAssignment && (
-                      <div className="col-span-2">
-                        <label className="flex items-center space-x-3 space-x-reverse">
+                      <div className="sm:col-span-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
                           <input
                             type="checkbox"
                             name="hasPartners"
                             checked={formData.hasPartners}
                             onChange={handleInputChange}
-                            className="w-5 h-5 text-[#00416A] border-gray-300 rounded focus:ring-[#00416A]"
+                            className="w-4 h-4 sm:w-5 sm:h-5 text-[#00416A] border-gray-300 rounded focus:ring-[#00416A]"
                           />
-                          <span className="text-sm font-medium text-gray-700 mr-2">
+                          <span className="text-xs sm:text-sm font-medium text-gray-700">
                             هل يوجد شركاء؟
                           </span>
                         </label>
@@ -1270,8 +1278,8 @@ const RequestFormClient: React.FC = () => {
                     )}
 
                     {formData.isSharedAssignment && formData.hasPartners && (
-                      <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <div className="sm:col-span-2">
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                           معلومات الشركاء <span className="text-red-500">*</span>
                         </label>
                         <textarea
@@ -1281,14 +1289,13 @@ const RequestFormClient: React.FC = () => {
                           onChange={handleInputChange}
                           rows={3}
                           placeholder="الرجاء إدخال الأسماء الكاملة والأرقام الجامعية ومعلومات الاتصال للشركاء..."
-                          className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                            errors.partnersInfo
+                          className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.partnersInfo
                               ? "border-red-500"
                               : "border-gray-200"
-                          }`}
+                            }`}
                         />
                         {errors.partnersInfo && (
-                          <p className="text-red-500 text-sm mt-1">
+                          <p className="text-red-500 text-xs sm:text-sm mt-1">
                             {errors.partnersInfo}
                           </p>
                         )}
@@ -1299,7 +1306,7 @@ const RequestFormClient: React.FC = () => {
 
                 {service.fields.includes("subjectCode") && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                       رمز المادة <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -1308,14 +1315,13 @@ const RequestFormClient: React.FC = () => {
                       name="subjectCode"
                       value={formData.subjectCode}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.subjectCode
+                      className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.subjectCode
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.subjectCode && (
-                      <p className="text-red-500 text-sm mt-1">
+                      <p className="text-red-500 text-xs sm:text-sm mt-1">
                         {errors.subjectCode}
                       </p>
                     )}
@@ -1355,11 +1361,10 @@ const RequestFormClient: React.FC = () => {
                       name="translationPages"
                       value={formData.translationPages}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.translationPages
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.translationPages
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                       placeholder="0"
                     />
                     {errors.translationPages && (
@@ -1380,11 +1385,10 @@ const RequestFormClient: React.FC = () => {
                       value={formData.targetLanguage}
                       onChange={handleInputChange}
                       required
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.targetLanguage
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.targetLanguage
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     >
                       <option value="">اختر اللغة</option>
                       <option value="ar">العربية</option>
@@ -1409,11 +1413,10 @@ const RequestFormClient: React.FC = () => {
                       name="deliveryDate"
                       value={formData.deliveryDate}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.deliveryDate
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.deliveryDate
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.deliveryDate && (
                       <p className="text-red-500 text-sm mt-1">
@@ -1455,11 +1458,10 @@ const RequestFormClient: React.FC = () => {
                       name="universityName"
                       value={formData.universityName}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.universityName
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.universityName
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.universityName && (
                       <p className="text-red-500 text-sm mt-1">
@@ -1496,11 +1498,10 @@ const RequestFormClient: React.FC = () => {
                       name="researchDeliveryDate"
                       value={formData.researchDeliveryDate}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.researchDeliveryDate
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.researchDeliveryDate
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.researchDeliveryDate && (
                       <p className="text-red-500 text-sm mt-1">
@@ -1522,11 +1523,10 @@ const RequestFormClient: React.FC = () => {
                       name="projectTitle"
                       value={formData.projectTitle}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.projectTitle
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.projectTitle
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.projectTitle && (
                       <p className="text-red-500 text-sm mt-1">
@@ -1547,11 +1547,10 @@ const RequestFormClient: React.FC = () => {
                       name="specialization"
                       value={formData.specialization}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.specialization
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.specialization
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.specialization && (
                       <p className="text-red-500 text-sm mt-1">
@@ -1573,11 +1572,10 @@ const RequestFormClient: React.FC = () => {
                       name="expectedPages"
                       value={formData.expectedPages}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.expectedPages
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.expectedPages
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.expectedPages && (
                       <p className="text-red-500 text-sm mt-1">
@@ -1598,11 +1596,10 @@ const RequestFormClient: React.FC = () => {
                       value={formData.universityRequirements}
                       onChange={handleInputChange}
                       rows={3}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.universityRequirements
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.universityRequirements
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                       placeholder="اذكر متطلبات الجامعة الخاصة بمشروع التخرج..."
                     />
                     {errors.universityRequirements && (
@@ -1624,11 +1621,10 @@ const RequestFormClient: React.FC = () => {
                       name="projectDeliveryDate"
                       value={formData.projectDeliveryDate}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.projectDeliveryDate
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.projectDeliveryDate
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.projectDeliveryDate && (
                       <p className="text-red-500 text-sm mt-1">
@@ -1682,9 +1678,8 @@ const RequestFormClient: React.FC = () => {
                       name="cvFullName"
                       value={formData.cvFullName}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.cvFullName ? "border-red-500" : "border-gray-200"
-                      }`}
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.cvFullName ? "border-red-500" : "border-gray-200"
+                        }`}
                     />
                     {errors.cvFullName && (
                       <p className="text-red-500 text-sm mt-1">
@@ -1705,11 +1700,10 @@ const RequestFormClient: React.FC = () => {
                       name="cvSpecialization"
                       value={formData.cvSpecialization}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.cvSpecialization
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.cvSpecialization
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.cvSpecialization && (
                       <p className="text-red-500 text-sm mt-1">
@@ -1730,11 +1724,10 @@ const RequestFormClient: React.FC = () => {
                       value={formData.cvExperience}
                       onChange={handleInputChange}
                       rows={3}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.cvExperience
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.cvExperience
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                       placeholder="الخبرات السابقة..."
                     />
                     {errors.cvExperience && (
@@ -1756,9 +1749,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.cvSkills}
                       onChange={handleInputChange}
                       rows={3}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.cvSkills ? "border-red-500" : "border-gray-200"
-                      }`}
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.cvSkills ? "border-red-500" : "border-gray-200"
+                        }`}
                       placeholder="المهارات التقنية والشخصية..."
                     />
                     {errors.cvSkills && (
@@ -1780,9 +1772,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.cvCourses}
                       onChange={handleInputChange}
                       rows={3}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.cvCourses ? "border-red-500" : "border-gray-200"
-                      }`}
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.cvCourses ? "border-red-500" : "border-gray-200"
+                        }`}
                       placeholder="الدورات والشهادات..."
                     />
                     {errors.cvCourses && (
@@ -1804,11 +1795,10 @@ const RequestFormClient: React.FC = () => {
                       name="cvLanguages"
                       value={formData.cvLanguages}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.cvLanguages
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.cvLanguages
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                       placeholder="العربية (أم)، الإنجليزية (متقدم)..."
                     />
                     {errors.cvLanguages && (
@@ -1830,11 +1820,10 @@ const RequestFormClient: React.FC = () => {
                       value={formData.cvObjective}
                       onChange={handleInputChange}
                       rows={2}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.cvObjective
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.cvObjective
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                       placeholder="أهدافك المهنية..."
                     />
                     {errors.cvObjective && (
@@ -1857,11 +1846,10 @@ const RequestFormClient: React.FC = () => {
                       name="presentationTopic"
                       value={formData.presentationTopic}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.presentationTopic
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.presentationTopic
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.presentationTopic && (
                       <p className="text-red-500 text-sm mt-1">
@@ -1882,11 +1870,10 @@ const RequestFormClient: React.FC = () => {
                       name="presentationSlides"
                       value={formData.presentationSlides}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.presentationSlides
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.presentationSlides
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.presentationSlides && (
                       <p className="text-red-500 text-sm mt-1">
@@ -1928,11 +1915,10 @@ const RequestFormClient: React.FC = () => {
                       value={formData.presentationLanguage}
                       onChange={handleInputChange}
                       required
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.presentationLanguage
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.presentationLanguage
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     >
                       <option value="">اختر اللغة</option>
                       <option value="ar">العربية</option>
@@ -1958,11 +1944,10 @@ const RequestFormClient: React.FC = () => {
                       name="presentationDeliveryDate"
                       value={formData.presentationDeliveryDate}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.presentationDeliveryDate
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.presentationDeliveryDate
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.presentationDeliveryDate && (
                       <p className="text-red-500 text-sm mt-1">
@@ -1984,11 +1969,10 @@ const RequestFormClient: React.FC = () => {
                       name="posterTitle"
                       value={formData.posterTitle}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.posterTitle
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.posterTitle
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.posterTitle && (
                       <p className="text-red-500 text-sm mt-1">
@@ -2009,11 +1993,10 @@ const RequestFormClient: React.FC = () => {
                       name="posterStudentName"
                       value={formData.posterStudentName}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.posterStudentName
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.posterStudentName
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.posterStudentName && (
                       <p className="text-red-500 text-sm mt-1">
@@ -2034,11 +2017,10 @@ const RequestFormClient: React.FC = () => {
                       name="posterUniversity"
                       value={formData.posterUniversity}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.posterUniversity
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.posterUniversity
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.posterUniversity && (
                       <p className="text-red-500 text-sm mt-1">
@@ -2073,9 +2055,8 @@ const RequestFormClient: React.FC = () => {
                       name="posterSize"
                       value={formData.posterSize}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.posterSize ? "border-red-500" : "border-gray-200"
-                      }`}
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.posterSize ? "border-red-500" : "border-gray-200"
+                        }`}
                       placeholder="مثال: A1, 50x70 سم"
                     />
                     {errors.posterSize && (
@@ -2098,11 +2079,10 @@ const RequestFormClient: React.FC = () => {
                       name="surveyTopic"
                       value={formData.surveyTopic}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.surveyTopic
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.surveyTopic
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.surveyTopic && (
                       <p className="text-red-500 text-sm mt-1">
@@ -2123,11 +2103,10 @@ const RequestFormClient: React.FC = () => {
                       name="surveyTarget"
                       value={formData.surveyTarget}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.surveyTarget
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.surveyTarget
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.surveyTarget && (
                       <p className="text-red-500 text-sm mt-1">
@@ -2149,11 +2128,10 @@ const RequestFormClient: React.FC = () => {
                       name="surveyQuestionsCount"
                       value={formData.surveyQuestionsCount}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.surveyQuestionsCount
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.surveyQuestionsCount
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     />
                     {errors.surveyQuestionsCount && (
                       <p className="text-red-500 text-sm mt-1">
@@ -2173,11 +2151,10 @@ const RequestFormClient: React.FC = () => {
                       value={formData.surveyQuestionType}
                       onChange={handleInputChange}
                       required
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${
-                        errors.surveyQuestionType
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.surveyQuestionType
                           ? "border-red-500"
                           : "border-gray-200"
-                      }`}
+                        }`}
                     >
                       <option value="">اختر النوع</option>
                       <option value="closed">مغلقة (اختيار من متعدد)</option>
