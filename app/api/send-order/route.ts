@@ -139,6 +139,8 @@ const getFieldLabel = (field: string): string => {
     deliveryDate: "الموعد النهائي",
     researchFile: "ملف البحث",
     homeWorkFile: "ملف الوظيفة",
+    partnersInfo: "معلومات الشركاء",
+    isAssignmentShared: "هل الوظيفة مشتركة؟",
     universityName: "اسم الجامعة",
     formattingTemplate: "نموذج التنسيق",
     researchDeliveryDate: "الموعد النهائي",
@@ -184,8 +186,10 @@ const getFieldLabel = (field: string): string => {
     methodology: "المنهجية",
     sourceCount: "عدد المصادر",
     citationFormat: "تنسيق الاقتباس",
+    
   };
   return labels[field] || field;
+  
 };
 
 const formatBoolean = (value: boolean): string => (value ? 'نعم' : 'لا');

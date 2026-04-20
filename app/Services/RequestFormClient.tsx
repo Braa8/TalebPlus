@@ -5,7 +5,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
-
+import { getFieldLabel } from "@/lib/fieldLabels"; // تأكد من المسار الصحيح لملف fieldLabels
 // تعريف أنواع البيانات بشكل شامل يضم جميع الخدمات
 interface FormData {
   // الحقول المشتركة
@@ -103,6 +103,7 @@ interface FormData {
   sourceCount: string;
   citationFormat: string;
 }
+
 
 // تعريف مراحل النموذج (نستخدم 3 خطوات فعلية، والمراجعة نافذة منبثقة)
 enum FormStep {
@@ -568,10 +569,10 @@ const RequestFormClient: React.FC = () => {
   ) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 40 * 1024 * 1024) {
+      if (file.size > 20 * 1024 * 1024) {
         setErrors((prev) => ({
           ...prev,
-          [fieldName]: "حجم الملف يتجاوز الحد الأقصى (40 ميجابايت)",
+          [fieldName]: "حجم الملف يتجاوز الحد الأقصى (20 ميجابايت)",
         }));
         return;
       }
@@ -615,53 +616,95 @@ const RequestFormClient: React.FC = () => {
   };
 
   const sendEmail = async () => {
-    if (!validateFields()) {
-      alert("يرجى ملء جميع الحقول المطلوبة قبل الإرسال.");
-      return;
-    }
+  if (!validateFields()) {
+    alert("يرجى ملء جميع الحقول المطلوبة قبل الإرسال.");
+    return;
+  }
 
-    setLoading(true);
-    try {
-      // استخدام FormData لإرسال الملفات بشكل صحيح
-      const payload = new FormData();
+  setLoading(true);
+  try {
+    // 1. رفع الملفات إلى Vercel Blob أولاً
+    const fileFields = [
+      "translationFile",
+      "researchFile",
+      "formattingTemplate",
+      "presentationContent",
+      "designFile",
+      "referenceFile",
+      "posterLogo",
+      "homeWorkFile",
+    ];
 
-      // إضافة جميع الحقول النصية والمنطقية
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value instanceof File) {
-          payload.append(key, value);
-        } else if (Array.isArray(value)) {
-          payload.append(key, JSON.stringify(value));
-        } else if (typeof value === "boolean") {
-          payload.append(key, String(value));
-        } else if (value !== null && value !== undefined) {
-          payload.append(key, String(value));
+    const uploadedUrls: Record<string, string> = {};
+
+    for (const field of fileFields) {
+      const file = formData[field as keyof FormData] as File | null;
+      if (file) {
+        try {
+          const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+            method: "POST",
+            body: file,
+          });
+
+          if (!response.ok) {
+            throw new Error(`فشل رفع ${getFieldLabel(field)}`);
+          }
+
+          const blob = await response.json();
+          uploadedUrls[field] = blob.url;
+        } catch (uploadError) {
+          console.error(`Error uploading ${field}:`, uploadError);
+          alert(`فشل رفع الملف: ${getFieldLabel(field)}. يرجى المحاولة مرة أخرى.`);
+          setLoading(false);
+          return;
         }
-      });
-
-      payload.append("estimatedPrice", String(estimatedPrice));
-      payload.append("priceBreakdown", priceBreakdown);
-
-      const response = await fetch("/api/send-order", {
-        method: "POST",
-        body: payload,
-        // لا تقم بتعيين Content-Type يدويًا عند استخدام FormData
-      });
-
-      if (response.ok) {
-        alert("تم إرسال طلبك بنجاح! سنتواصل معك قريبًا.");
-        resetForm();
-      } else {
-        const error = await response.json();
-        alert(error.error || "حدث خطأ أثناء الإرسال، يرجى المحاولة لاحقًا.");
       }
-    } catch (error) {
-      console.error("فشل الإرسال:", error);
-      alert("حدث خطأ في الشبكة. تأكد من اتصالك بالإنترنت.");
-    } finally {
-      setLoading(false);
     }
-  };
 
+    // 2. بناء FormData مع الروابط بدلاً من الملفات
+    const payload = new FormData();
+
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value instanceof File) {
+        // نرسل الرابط بدلاً من الملف
+        const url = uploadedUrls[key];
+        if (url) {
+          payload.append(key + "Url", url);
+        }
+        // نرسل اسم الملف أيضاً للعرض
+        payload.append(key + "Name", value.name);
+      } else if (Array.isArray(value)) {
+        payload.append(key, JSON.stringify(value));
+      } else if (typeof value === "boolean") {
+        payload.append(key, String(value));
+      } else if (value !== null && value !== undefined) {
+        payload.append(key, String(value));
+      }
+    });
+
+    payload.append("estimatedPrice", String(estimatedPrice));
+    payload.append("priceBreakdown", priceBreakdown);
+
+    // 3. إرسال الطلب إلى الخادم
+    const response = await fetch("/api/send-order", {
+      method: "POST",
+      body: payload,
+    });
+
+    if (response.ok) {
+      alert("تم إرسال طلبك بنجاح! سنتواصل معك قريبًا.");
+      resetForm();
+    } else {
+      const error = await response.json();
+      alert(error.error || "حدث خطأ أثناء الإرسال، يرجى المحاولة لاحقًا.");
+    }
+  } catch (error) {
+    console.error("فشل الإرسال:", error);
+    alert("حدث خطأ في الشبكة. تأكد من اتصالك بالإنترنت.");
+  } finally {
+    setLoading(false);
+  }
+};
   // عرض شريط التقدم (3 خطوات فقط)
   const renderProgress = () => {
     const steps = [
@@ -1227,7 +1270,6 @@ const RequestFormClient: React.FC = () => {
                     )}
                     <div className="mt-3">
                       <input
-                        required
                         type="file"
                         accept=".pdf,.doc,.docx,.txt"
                         onChange={(e) => handleFileUpload(e, "homeWorkFile")}
@@ -1255,7 +1297,7 @@ const RequestFormClient: React.FC = () => {
                           className="w-4 h-4 sm:w-5 sm:h-5 text-[#00416A] border-gray-300 rounded focus:ring-[#00416A]"
                         />
                         <span className="text-xs sm:text-sm font-medium text-gray-700">
-                          هل هذه مهمة مشتركة؟
+                          هل هذه وظيفة مشتركة؟
                         </span>
                       </label>
                     </div>
@@ -1271,7 +1313,7 @@ const RequestFormClient: React.FC = () => {
                             className="w-4 h-4 sm:w-5 sm:h-5 text-[#00416A] border-gray-300 rounded focus:ring-[#00416A]"
                           />
                           <span className="text-xs sm:text-sm font-medium text-gray-700">
-                            هل يوجد شركاء؟
+                            هل يوجد شركاء؟ (في حال لم يكن لديك شركاء سوف نحاول إيجاد شركاء مناسبين لك)
                           </span>
                         </label>
                       </div>
@@ -1283,7 +1325,6 @@ const RequestFormClient: React.FC = () => {
                           معلومات الشركاء <span className="text-red-500">*</span>
                         </label>
                         <textarea
-                          required
                           name="partnersInfo"
                           value={formData.partnersInfo}
                           onChange={handleInputChange}
