@@ -1319,7 +1319,7 @@ const RequestFormClient: React.FC = () => {
                       </div>
                     )}
 
-                    {formData.isSharedAssignment || formData.hasPartners && (
+                    { (formData.isSharedAssignment || formData.hasPartners) && (
                       <div className="sm:col-span-2">
                         <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                           معلومات الشركاء <span className="text-red-500">*</span>
