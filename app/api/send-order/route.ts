@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions'; // تأكد من وجود هذا الملف
+import { authOptions } from '@/lib/authOptions';
 import { rateLimitByIdentifier } from '@/lib/rateLimit';
 import { sanitizeInput } from '@/lib/sanitize';
 
@@ -17,7 +17,6 @@ interface FormDataPayload {
   budget: string;
 }
 
-// نسخة من مصفوفة الخدمات مع الحقول (fields) - يجب أن تتطابق مع الموجودة في RequestFormClient
 interface ServiceInfo {
   value: string;
   label: string;
@@ -114,16 +113,11 @@ const services: ServiceInfo[] = [
   },
 ];
 
-// دالة للحصول على تسمية الخدمة العربية
 const getServiceLabel = (value: string, packageName?: string): string => {
-  if (value === 'packages' && packageName) {
-    return packageName;
-  }
-  const service = services.find((s) => s.value === value);
-  return service ? service.label : value;
+  if (value === 'packages' && packageName) return packageName;
+  return services.find(s => s.value === value)?.label || value;
 };
 
-// دالة لتحويل أسماء الحقول إلى أسماء عربية مقروءة
 const getFieldLabel = (field: string): string => {
   const labels: Record<string, string> = {
     fullNameTriple: "الاسم الثلاثي",
@@ -187,10 +181,8 @@ const getFieldLabel = (field: string): string => {
     methodology: "المنهجية",
     sourceCount: "عدد المصادر",
     citationFormat: "تنسيق الاقتباس",
-    
   };
   return labels[field] || field;
-  
 };
 
 const formatBoolean = (value: boolean): string => (value ? 'نعم' : 'لا');
@@ -211,7 +203,7 @@ const buildTableFromFields = (
   for (const field of fields) {
     if (excludedFields.includes(field)) continue;
     const value = data[field];
-    if (value === undefined || value instanceof File) continue; // لا نعرض الملفات في الجدول
+    if (value === undefined || value instanceof File) continue;
     html += `
       <tr style="border-bottom: 1px solid #ddd;">
         <td style="padding: 8px; font-weight: bold; width: 200px; background: #f9f9f9;">${getFieldLabel(field)}</td>
@@ -235,13 +227,11 @@ function sanitizeFormData(data: FormDataPayload): FormDataPayload {
 }
 
 export async function POST(request: Request) {
-  // 1. التحقق من المصادقة
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
   }
 
-  // 2. تطبيق Rate Limiting
   const allowed = await rateLimitByIdentifier(session.user.id, {
     windowMs: 60 * 60 * 1000,
     max: 10,
@@ -256,20 +246,18 @@ export async function POST(request: Request) {
   try {
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.error('Missing email environment variables');
-      return NextResponse.json(
-        { error: 'خطأ في إعدادات البريد الإلكتروني' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'خطأ في إعدادات البريد الإلكتروني' }, { status: 500 });
     }
 
-    // ✅ استخدام formData() بدلاً من json()
     const form = await request.formData();
-
     const rawData: Record<string, unknown> = {};
     let estimatedPrice = 0;
     let priceBreakdown = "";
 
-    // قائمة بأسماء حقول الملفات
+    // ✅ قائمة المرفقات الجديدة (روابط وأسماء)
+    const attachments: { field: string; name: string; url: string }[] = [];
+
+    // قائمة حقول الملفات (للاستبعاد من جدول التفاصيل)
     const fileFieldNames = [
       "translationFile",
       "researchFile",
@@ -281,17 +269,21 @@ export async function POST(request: Request) {
       "homeWorkFile",
     ];
 
-    const uploadedFiles: { field: string; name: string }[] = [];
-
     form.forEach((value, key) => {
       if (key === "estimatedPrice") {
         estimatedPrice = parseInt(value as string) || 0;
       } else if (key === "priceBreakdown") {
         priceBreakdown = value as string;
-      } else if (value instanceof File) {
-        // نحتفظ بأسماء الملفات فقط للبريد
-        uploadedFiles.push({ field: key, name: value.name });
-        // لا نضيف الملف نفسه إلى rawData (لن نرسله في البريد)
+      } else if (key.endsWith("Url")) {
+        // رابط الملف
+        const field = key.replace("Url", "");
+        const nameKey = field + "Name";
+        const name = form.get(nameKey) as string;
+        if (name) {
+          attachments.push({ field, name, url: value as string });
+        }
+      } else if (key.endsWith("Name")) {
+        // تمت معالجته مع الرابط
       } else if (key === "technologies") {
         try {
           rawData[key] = JSON.parse(value as string);
@@ -308,7 +300,6 @@ export async function POST(request: Request) {
     const formData = rawData as unknown as FormDataPayload;
     const sanitizedFormData = sanitizeFormData(formData);
 
-    // إعداد ناقل البريد
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -346,9 +337,17 @@ export async function POST(request: Request) {
       ? buildTableFromFields(sanitizedFormData, serviceFields)
       : '<p>لا توجد تفاصيل إضافية محددة.</p>';
 
-    // قسم الملفات المرفوعة (أسماء فقط)
-    const attachmentsSection = uploadedFiles.length > 0
-      ? `<h3>📎 ملفات مرفقة (${uploadedFiles.length})</h3><ul>${uploadedFiles.map(f => `<li><strong>${getFieldLabel(f.field)}:</strong> ${f.name}</li>`).join('')}</ul>`
+    // ✅ قسم المرفقات بالروابط
+    const attachmentsSection = attachments.length > 0
+      ? `<h3>📎 الملفات المرفقة (${attachments.length})</h3>
+         <ul>
+           ${attachments.map(f => `
+             <li>
+               <strong>${getFieldLabel(f.field)}:</strong>
+               <a href="${f.url}" target="_blank" style="color: #00416A;">تحميل الملف (${f.name})</a>
+             </li>
+           `).join('')}
+         </ul>`
       : '';
 
     const htmlContent = `
@@ -402,13 +401,9 @@ export async function POST(request: Request) {
     };
 
     await transporter.sendMail(mailOptions);
-
     return NextResponse.json({ message: 'تم إرسال الطلب بنجاح' }, { status: 200 });
   } catch (error) {
     console.error('خطأ في إرسال البريد:', error);
-    return NextResponse.json(
-      { error: 'فشل إرسال الطلب' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'فشل إرسال الطلب' }, { status: 500 });
   }
 }
