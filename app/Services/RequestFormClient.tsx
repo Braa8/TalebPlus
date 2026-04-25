@@ -142,7 +142,7 @@ const services: ServiceOption[] = [
     label: "كتابة وظائف (الجامعة الافتراضية)",
     icon: "📚",
     description: "حل واجبات ومشاريع الجامعة الافتراضية السورية",
-    price: "75000-150000 حسب متطلبات الوظيفة",
+    price: "75 000-150 000 حسب متطلبات الوظيفة",
     detailsDescription:
       "خدمة مخصصة للجامعة الافتراضية السورية. مدة التسليم القصوى 10 أيام.",
     fields: [
@@ -167,7 +167,7 @@ const services: ServiceOption[] = [
     icon: "📐",
     description:
       "تنسيق البحث وفق المتطلبات (الهوامش - الخطوط - العناوين - الفهرس - المراجع)",
-    price: "300000",
+    price: "300 000",
     fields: [
       "researchFile",
       "universityName",
@@ -181,7 +181,7 @@ const services: ServiceOption[] = [
     icon: "🎓",
     description:
       "مساعدة الطالب في إعداد مشروع التخرج (الهيكل العلمي - التنسيق - التدقيق اللغوي - إعداد العرض)",
-    price: "1300000",
+    price: "1 300 000",
     fields: [
       "projectTitle",
       "specialization",
@@ -197,7 +197,7 @@ const services: ServiceOption[] = [
     label: "إعداد وتصميم السير الذاتية",
     icon: "📄",
     description: "إعداد سيرة ذاتية احترافية",
-    price: "75000",
+    price: "75 000",
     fields: [
       "cvFullName",
       "cvSpecialization",
@@ -213,7 +213,7 @@ const services: ServiceOption[] = [
     label: "إعداد العروض التقديمية",
     icon: "📊",
     description: "تصميم عروض تقديمية احترافية",
-    price: "75000",
+    price: "75 000",
     fields: [
       "presentationTopic",
       "presentationSlides",
@@ -241,7 +241,7 @@ const services: ServiceOption[] = [
     label: "إعداد الاستبيانات",
     icon: "📋",
     description: "تصميم استبيانات علمية لمشاريع التخرج أو الدراسات",
-    price: "100000",
+    price: "100 000",
     fields: [
       "surveyTopic",
       "surveyTarget",
@@ -254,7 +254,7 @@ const services: ServiceOption[] = [
     label: "تطوير مواقع",
     icon: "💻",
     description: "تصميم وبرمجة المواقع",
-    price: "500000",
+    price: "500 000",
     fields: [
       "websiteType",
       "pagesRequired",
@@ -282,7 +282,7 @@ const services: ServiceOption[] = [
     label: "إعداد أبحاث",
     icon: "🔬",
     description: "إعداد الدراسات والأبحاث",
-    price: "300000",
+    price: "300 000",
     fields: ["researchTitle", "methodology", "sourceCount", "citationFormat"],
   },
   {
@@ -641,10 +641,13 @@ const RequestFormClient: React.FC = () => {
       const file = formData[field as keyof FormData] as File | null;
       if (file) {
         try {
-          const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
-            method: "POST",
-            body: file,
-          });
+          const response = await fetch(
+            `/api/upload?filename=${encodeURIComponent(file.name)}`,
+            {
+              method: "POST",
+              body: file,
+            }
+          );
 
           if (!response.ok) {
             throw new Error(`فشل رفع ${getFieldLabel(field)}`);
@@ -654,38 +657,62 @@ const RequestFormClient: React.FC = () => {
           uploadedUrls[field] = blob.url;
         } catch (uploadError) {
           console.error(`Error uploading ${field}:`, uploadError);
-          alert(`فشل رفع الملف: ${getFieldLabel(field)}. يرجى المحاولة مرة أخرى.`);
+          alert(
+            `فشل رفع الملف: ${getFieldLabel(field)}. يرجى المحاولة مرة أخرى.`
+          );
           setLoading(false);
           return;
         }
       }
     }
 
-    // 2. بناء FormData مع الروابط بدلاً من الملفات
+    // 2. بناء FormData (مع تحويل جميع القيم إلى نصوص)
     const payload = new FormData();
 
-    Object.entries(formData).forEach(([key, value]) => {
+    // نضمن أن الحقول الأساسية تُرسل دائمًا
+    const essentialTextFields = ["fullName", "email", "phone"];
+    for (const field of essentialTextFields) {
+      const val = formData[field as keyof FormData];
+      payload.append(field, typeof val === "string" ? val : "");
+    }
+
+    // نمر على باقي الحقول عدا الأساسية والملفات
+    const fileFieldSet = new Set(fileFields);
+    for (const [key, value] of Object.entries(formData)) {
+      if (essentialTextFields.includes(key) || fileFieldSet.has(key)) continue;
+
       if (value instanceof File) {
-        // نرسل الرابط بدلاً من الملف
+        // الملفات غير متوقعة هنا لأننا استبعدناها بـ fileFieldSet، لكن للاحتياط:
         const url = uploadedUrls[key];
-        if (url) {
-          payload.append(key + "Url", url);
-        }
-        // نرسل اسم الملف أيضاً للعرض
+        if (url) payload.append(key + "Url", url);
         payload.append(key + "Name", value.name);
       } else if (Array.isArray(value)) {
         payload.append(key, JSON.stringify(value));
-      } else if (typeof value === "boolean") {
-        payload.append(key, String(value));
-      } else if (value !== null && value !== undefined) {
-        payload.append(key, String(value));
+      } else {
+        // أي شيء آخر نص، عدد، قيمة منطقية، null أو undefined
+        const str =
+          value === null || value === undefined
+            ? ""
+            : typeof value === "boolean"
+            ? String(value)
+            : String(value);
+        payload.append(key, str);
       }
-    });
+    }
+
+    // 3. إرسال روابط وأسماء الملفات التي تم رفعها (إن وجدت)
+    for (const [field, url] of Object.entries(uploadedUrls)) {
+      const file = formData[field as keyof FormData] as File | null;
+      if (file) {
+        payload.append(field + "Url", url);
+        payload.append(field + "Name", file.name);
+      }
+    }
 
     payload.append("estimatedPrice", String(estimatedPrice));
     payload.append("priceBreakdown", priceBreakdown);
 
-    // 3. إرسال الطلب إلى الخادم
+    // 4. إرسال الطلب إلى الخادم
     const response = await fetch("/api/send-order", {
       method: "POST",
       body: payload,
@@ -1039,7 +1066,7 @@ const RequestFormClient: React.FC = () => {
                       className="w-5 h-5 text-[#00416A] border-2 border-gray-300 rounded focus:ring-[#00416A]"
                     />
                     <span className="text-sm font-medium text-gray-700">
-                      تسليم عاجل (زيادة 50% على السعر)
+                      تسليم عاجل (زيادة 50% على السعر) في غضون 3 أيام كحد أقصى
                     </span>
                   </label>
                 </div>
