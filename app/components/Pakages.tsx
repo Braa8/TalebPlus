@@ -135,56 +135,62 @@ const PackagesClient: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedPackage) return;
-    
-    if (!validateForm()) {
-      return;
-    }
+  e.preventDefault();
+  if (!selectedPackage) return;
+  
+  if (!validateForm()) {
+    return;
+  }
 
-    setLoading(true);
-    setMessage(null);
+  setLoading(true);
+  setMessage(null);
 
-    try {
-      const response = await fetch('/api/send-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          formData: {
-            ...formData,
-            packageName: selectedPackage.name,
-            packagePrice: selectedPackage.price,
-            serviceType: 'packages',
-          },
-          estimatedPrice: selectedPackage.price,
-          priceBreakdown: `السعر النهائي: ${selectedPackage.price.toLocaleString()} ل.س`,
-        }),
+  try {
+    // بناء كائن JSON بنفس البنية التي يتوقعها الخادم (حقول مباشرة في الجذر)
+    const payload = {
+      fullName: formData.fullName.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      serviceType: 'packages',
+      packageName: selectedPackage.name,
+      urgentDelivery: false, // أو يمكنك إضافته حسب حاجتك
+      budget: '',            // يمكنك جعله فارغاً أو إزالته إذا كان اختيارياً
+      deliveryDate: formData.deliveryDate, // سيمرر كما هو (نص)
+      notes: formData.notes.trim(),
+      estimatedPrice: selectedPackage.price,
+      priceBreakdown: `السعر النهائي: ${selectedPackage.price.toLocaleString()} ل.س`,
+    };
+
+    const response = await fetch('/api/send-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      setMessage({ type: 'success', text: 'تم إرسال طلبك بنجاح! سنتواصل معك قريباً.' });
+      setFormData({
+        packageId: '',
+        fullName: '',
+        email: '',
+        phone: '',
+        deliveryDate: '',
+        notes: '',
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage({ type: 'success', text: 'تم إرسال طلبك بنجاح! سنتواصل معك قريباً.' });
-        setFormData({
-          packageId: '',
-          fullName: '',
-          email: '',
-          phone: '',
-          deliveryDate: '',
-          notes: '',
-        });
-        setSelectedPackage(null);
-        setFieldErrors({});
-      } else {
-        setMessage({ type: 'error', text: data.error || 'حدث خطأ، حاول مرة أخرى' });
-      }
-    } catch (error) {
-      console.error('Error submitting order:', error);
-      setMessage({ type: 'error', text: 'خطأ في الاتصال بالخادم' });
-    } finally {
-      setLoading(false);
+      setSelectedPackage(null);
+      setFieldErrors({});
+    } else {
+      setMessage({ type: 'error', text: data.error || 'حدث خطأ، حاول مرة أخرى' });
     }
-  };
+  } catch (error) {
+    console.error('Error submitting order:', error);
+    setMessage({ type: 'error', text: 'خطأ في الاتصال بالخادم' });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-linear-to-br from-[#F0EAD6] to-white py-12 px-4">
