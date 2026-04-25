@@ -27,11 +27,7 @@ const packages: Package[] = [
     name: 'باكج مشروع التخرّج',
     description: 'خدمات متكاملة لمشروع التخرّج',
     price: 413000,
-    features: [
-      'تنسيق المشروع',
-      'تصميم العرض',
-      'تصميم الغلاف و البوستر',
-    ],
+    features: ['تنسيق المشروع', 'تصميم العرض', 'تصميم الغلاف و البوستر'],
   },
   {
     id: 'professional',
@@ -39,13 +35,7 @@ const packages: Package[] = [
     description: 'التأهيل لسوق العمل',
     price: 980000,
     popular: true,
-    features: [
-      'CV',
-      'Cover Letter',
-      'LinkedIn',
-      'موقع إلكتروني',
-      'بطاقة أعمال رقمية'
-    ],
+    features: ['CV', 'Cover Letter', 'LinkedIn', 'موقع إلكتروني', 'بطاقة أعمال رقمية'],
   },
   {
     id: 'enterprise',
@@ -57,7 +47,7 @@ const packages: Package[] = [
       'تنسيق و تنضيد المشروع',
       'ترجمة أكاديمية (اختياري)',
       'تصميم عرض تقديمي تفاعلي',
-      'تصميم بوستر و غلاف المشروع'
+      'تصميم بوستر و غلاف المشروع',
     ],
   },
   {
@@ -65,22 +55,14 @@ const packages: Package[] = [
     name: 'باقة (طالب+) الإبداعية',
     description: 'إبداع بلا حدود',
     price: 253000,
-    features: [
-      'إنفوجرافيك تعليمي',
-      'تصميم عرض تقديمي تفاعلي',
-      'تصميم بوستر و غلاف المشروع'
-    ],
+    features: ['إنفوجرافيك تعليمي', 'تصميم عرض تقديمي تفاعلي', 'تصميم بوستر و غلاف المشروع'],
   },
   {
     id: 'speed',
     name: 'باقة (طالب+) السريعة',
     description: '🚀',
     price: 506000,
-    features: [
-      'تنضيد مشروع تخرج',
-      'تصميم عرض تقديمي ',
-      'تصميم بوستر '
-    ],
+    features: ['تنضيد مشروع تخرج', 'تصميم عرض تقديمي ', 'تصميم بوستر '],
   },
 ];
 
@@ -100,21 +82,23 @@ const PackagesClient: React.FC = () => {
 
   const handlePackageSelect = (pkg: Package) => {
     setSelectedPackage(pkg);
-    setFormData(prev => ({ ...prev, packageId: pkg.id }));
+    setFormData((prev) => ({ ...prev, packageId: pkg.id }));
     setFieldErrors({});
+    // نخفي أي رسالة قديمة عند اختيار باقة جديدة
+    setMessage(null);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (fieldErrors[name]) {
-      setFieldErrors(prev => ({ ...prev, [name]: '' }));
+      setFieldErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
-    
+
     if (!formData.fullName.trim()) {
       errors.fullName = 'الاسم الكامل مطلوب';
     }
@@ -135,62 +119,62 @@ const PackagesClient: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!selectedPackage) return;
-  
-  if (!validateForm()) {
-    return;
-  }
+    e.preventDefault();
+    if (!selectedPackage) return;
 
-  setLoading(true);
-  setMessage(null);
-
-  try {
-    // بناء كائن JSON بنفس البنية التي يتوقعها الخادم (حقول مباشرة في الجذر)
-    const payload = {
-      fullName: formData.fullName.trim(),
-      email: formData.email.trim(),
-      phone: formData.phone.trim(),
-      serviceType: 'packages',
-      packageName: selectedPackage.name,
-      urgentDelivery: false, // أو يمكنك إضافته حسب حاجتك
-      budget: '',            // يمكنك جعله فارغاً أو إزالته إذا كان اختيارياً
-      deliveryDate: formData.deliveryDate, // سيمرر كما هو (نص)
-      notes: formData.notes.trim(),
-      estimatedPrice: selectedPackage.price,
-      priceBreakdown: `السعر النهائي: ${selectedPackage.price.toLocaleString()} ل.س`,
-    };
-
-    const response = await fetch('/api/send-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      setMessage({ type: 'success', text: 'تم إرسال طلبك بنجاح! سنتواصل معك قريباً.' });
-      setFormData({
-        packageId: '',
-        fullName: '',
-        email: '',
-        phone: '',
-        deliveryDate: '',
-        notes: '',
-      });
-      setSelectedPackage(null);
-      setFieldErrors({});
-    } else {
-      setMessage({ type: 'error', text: data.error || 'حدث خطأ، حاول مرة أخرى' });
+    if (!validateForm()) {
+      return;
     }
-  } catch (error) {
-    console.error('Error submitting order:', error);
-    setMessage({ type: 'error', text: 'خطأ في الاتصال بالخادم' });
-  } finally {
-    setLoading(false);
-  }
-};
+
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const payload = {
+        fullName: formData.fullName.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        serviceType: 'packages',
+        packageName: selectedPackage.name,
+        urgentDelivery: false,
+        budget: '',
+        deliveryDate: formData.deliveryDate,
+        notes: formData.notes.trim(),
+        estimatedPrice: selectedPackage.price,
+        priceBreakdown: `السعر النهائي: ${selectedPackage.price.toLocaleString()} ل.س`,
+      };
+
+      const response = await fetch('/api/send-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'تم إرسال طلبك بنجاح! سنتواصل معك قريباً.' });
+        // نعيد تعيين النموذج إلى حالته الأولية
+        setFormData({
+          packageId: '',
+          fullName: '',
+          email: '',
+          phone: '',
+          deliveryDate: '',
+          notes: '',
+        });
+        setSelectedPackage(null);
+        setFieldErrors({});
+      } else {
+        setMessage({ type: 'error', text: data.error || 'حدث خطأ، حاول مرة أخرى' });
+      }
+    } catch (error) {
+      console.error('Error submitting order:', error);
+      setMessage({ type: 'error', text: 'خطأ في الاتصال بالخادم' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-linear-to-br from-[#F0EAD6] to-white py-12 px-4">
@@ -205,6 +189,27 @@ const PackagesClient: React.FC = () => {
           <p className="text-xl text-gray-600">خطط مرنة تناسب جميع الاحتياجات</p>
         </div>
 
+        {/* ✅ رسالة التأكيد – تظهر بشكل مستقل ولا تختفي إلا بالضغط على زر الإغلاق */}
+        {message && (
+          <div
+            className={`relative max-w-2xl mx-auto p-4 rounded-lg mb-6 flex items-center justify-between ${
+              message.type === 'success'
+                ? 'bg-green-100 text-green-700 border border-green-300'
+                : 'bg-red-100 text-red-700 border border-red-300'
+            }`}
+          >
+            <span className="text-sm sm:text-base">{message.text}</span>
+            <button
+              onClick={() => setMessage(null)}
+              className="text-xl font-bold leading-none mr-4 hover:opacity-70 transition-opacity"
+              aria-label="إغلاق"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* شبكة الباقات */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {packages.map((pkg) => (
             <div
@@ -216,16 +221,13 @@ const PackagesClient: React.FC = () => {
               }`}
               onClick={() => handlePackageSelect(pkg)}
             >
-              {pkg.popular && (
-                <div className="absolute top-4 left-4 bg-[#00416A] text-white px-4 py-1 rounded-full text-sm font-semibold shadow-lg">
-                  الأكثر طلباً
-                </div>
-              )}
+              
               <div className="p-8">
                 <h3 className="text-2xl font-bold text-[#00416A] mb-2">{pkg.name}</h3>
                 <p className="text-gray-500 mb-4">{pkg.description}</p>
                 <div className="text-4xl font-bold text-[#00416A] mb-6">
-                  {pkg.price.toLocaleString()} <span className="text-lg font-normal text-gray-500">ل.س</span>
+                  {pkg.price.toLocaleString()}{' '}
+                  <span className="text-lg font-normal text-gray-500">ل.س</span>
                 </div>
                 <ul className="space-y-3 mb-8">
                   {pkg.features.map((feature, idx) => (
@@ -249,23 +251,12 @@ const PackagesClient: React.FC = () => {
           ))}
         </div>
 
+        {/* نموذج الطلب – يظهر فقط عند اختيار باقة */}
         {selectedPackage && (
           <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 border border-white/20 max-w-2xl mx-auto">
             <h2 className="text-3xl font-bold text-[#00416A] mb-6 text-center">
               طلب الباقة: {selectedPackage.name}
             </h2>
-
-            {message && (
-              <div
-                className={`p-4 rounded-lg mb-6 ${
-                  message.type === 'success'
-                    ? 'bg-green-100 text-green-700 border border-green-300'
-                    : 'bg-red-100 text-red-700 border border-red-300'
-                }`}
-              >
-                {message.text}
-              </div>
-            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -376,7 +367,9 @@ const PackagesClient: React.FC = () => {
                       </svg>
                       جاري الإرسال...
                     </span>
-                  ) : 'تأكيد وإرسال الطلب'}
+                  ) : (
+                    'تأكيد وإرسال الطلب'
+                  )}
                 </button>
                 <button
                   type="button"
