@@ -641,13 +641,10 @@ const RequestFormClient: React.FC = () => {
       const file = formData[field as keyof FormData] as File | null;
       if (file) {
         try {
-          const response = await fetch(
-            `/api/upload?filename=${encodeURIComponent(file.name)}`,
-            {
-              method: "POST",
-              body: file,
-            }
-          );
+          const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+            method: "POST",
+            body: file,
+          });
 
           if (!response.ok) {
             throw new Error(`فشل رفع ${getFieldLabel(field)}`);
@@ -657,62 +654,44 @@ const RequestFormClient: React.FC = () => {
           uploadedUrls[field] = blob.url;
         } catch (uploadError) {
           console.error(`Error uploading ${field}:`, uploadError);
-          alert(
-            `فشل رفع الملف: ${getFieldLabel(field)}. يرجى المحاولة مرة أخرى.`
-          );
+          alert(`فشل رفع الملف: ${getFieldLabel(field)}. يرجى المحاولة مرة أخرى.`);
           setLoading(false);
           return;
         }
       }
     }
 
-    // 2. بناء FormData (مع تحويل جميع القيم إلى نصوص)
+    // 2. بناء FormData مع الروابط بدلاً من الملفات (البنية الأصلية العاملة)
     const payload = new FormData();
 
-    // نضمن أن الحقول الأساسية تُرسل دائمًا
-    const essentialTextFields = ["fullName", "email", "phone"];
-    for (const field of essentialTextFields) {
-      const val = formData[field as keyof FormData];
-      payload.append(field, typeof val === "string" ? val : "");
-    }
-
-    // نمر على باقي الحقول عدا الأساسية والملفات
-    const fileFieldSet = new Set(fileFields);
-    for (const [key, value] of Object.entries(formData)) {
-      if (essentialTextFields.includes(key) || fileFieldSet.has(key)) continue;
-
+    Object.entries(formData).forEach(([key, value]) => {
       if (value instanceof File) {
-        // الملفات غير متوقعة هنا لأننا استبعدناها بـ fileFieldSet، لكن للاحتياط:
         const url = uploadedUrls[key];
-        if (url) payload.append(key + "Url", url);
+        if (url) {
+          payload.append(key + "Url", url);
+        }
         payload.append(key + "Name", value.name);
       } else if (Array.isArray(value)) {
         payload.append(key, JSON.stringify(value));
-      } else {
-        // أي شيء آخر نص، عدد، قيمة منطقية، null أو undefined
-        const str =
-          value === null || value === undefined
-            ? ""
-            : typeof value === "boolean"
-            ? String(value)
-            : String(value);
-        payload.append(key, str);
+      } else if (typeof value === "boolean") {
+        payload.append(key, String(value));
+      } else if (value !== null && value !== undefined) {
+        payload.append(key, String(value));
       }
-    }
+    });
 
-    // 3. إرسال روابط وأسماء الملفات التي تم رفعها (إن وجدت)
-    for (const [field, url] of Object.entries(uploadedUrls)) {
-      const file = formData[field as keyof FormData] as File | null;
-      if (file) {
-        payload.append(field + "Url", url);
-        payload.append(field + "Name", file.name);
+    // ✅ إصلاح حاسم: تأكيد إرسال الحقول الأساسية يدويًا دائمًا
+    const essentialFields = { fullName: formData.fullName || "", email: formData.email || "", phone: formData.phone || "" };
+    for (const [field, val] of Object.entries(essentialFields)) {
+      if (!payload.has(field)) {
+        payload.append(field, val);
       }
     }
 
     payload.append("estimatedPrice", String(estimatedPrice));
     payload.append("priceBreakdown", priceBreakdown);
 
-    // 4. إرسال الطلب إلى الخادم
+    // 3. إرسال الطلب إلى الخادم
     const response = await fetch("/api/send-order", {
       method: "POST",
       body: payload,
@@ -1066,7 +1045,7 @@ const RequestFormClient: React.FC = () => {
                       className="w-5 h-5 text-[#00416A] border-2 border-gray-300 rounded focus:ring-[#00416A]"
                     />
                     <span className="text-sm font-medium text-gray-700">
-                      تسليم عاجل (زيادة 50% على السعر) في غضون 3 أيام كحد
+                      تسليم عاجل (زيادة 50% على السعر) في غضون 3 أيام كحد أقصى
                     </span>
                   </label>
                 </div>
