@@ -623,70 +623,81 @@ const RequestFormClient: React.FC = () => {
 
   setLoading(true);
   try {
-    // 1. رفع الملفات إلى Vercel Blob أولاً (كما هو)
+    // 1. رفع الملفات إن وجدت (لن تكون موجودة في الباقات عادةً)
     const fileFields = [
-      "translationFile",
-      "researchFile",
-      "formattingTemplate",
-      "presentationContent",
-      "designFile",
-      "referenceFile",
-      "posterLogo",
-      "homeWorkFile",
+      "translationFile", "researchFile", "formattingTemplate",
+      "presentationContent", "designFile", "referenceFile",
+      "posterLogo", "homeWorkFile",
     ];
-
     const uploadedUrls: Record<string, string> = {};
 
     for (const field of fileFields) {
       const file = formData[field as keyof FormData] as File | null;
       if (file) {
         try {
-          const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
-            method: "POST",
-            body: file,
-          });
-          if (!response.ok) throw new Error(`فشل رفع ${getFieldLabel(field)}`);
-          const blob = await response.json();
+          const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, { method: "POST", body: file });
+          if (!res.ok) throw new Error(`فشل رفع ${getFieldLabel(field)}`);
+          const blob = await res.json();
           uploadedUrls[field] = blob.url;
-        } catch (uploadError) {
-          console.error(`Error uploading ${field}:`, uploadError);
-          alert(`فشل رفع الملف: ${getFieldLabel(field)}. يرجى المحاولة مرة أخرى.`);
+        } catch (e) {
+          console.error(e);
+          alert(`فشل رفع الملف: ${getFieldLabel(field)}`);
           setLoading(false);
           return;
         }
       }
     }
 
-    // 2. بناء كائن JSON نظيف (بدلاً من FormData)
+    // 2. بناء كائن JSON خفيف ومخصص للخدمة
+    const service = services.find(s => s.value === formData.serviceType);
+    const allowedFields = new Set([
+      "fullName", "email", "phone", "urgentDelivery", "budget", "serviceType",
+      ...(service ? service.fields : []),
+    ]);
+
+    // نضيف packageName يدوياً لأنه قد لا يكون ضمن fields
+    if (formData.serviceType === "packages") {
+      allowedFields.add("packageName");
+    }
+
     const jsonPayload: Record<string, unknown> = {};
 
-    // إضافة جميع الحقول النصية/المنطقية/المصفوفات
-    for (const [key, value] of Object.entries(formData)) {
+    // نضمن الحقول الأساسية دائماً
+    jsonPayload.fullName = formData.fullName || "";
+    jsonPayload.email = formData.email || "";
+    jsonPayload.phone = formData.phone || "";
+    jsonPayload.urgentDelivery = formData.urgentDelivery;
+    jsonPayload.budget = formData.budget || "";
+    jsonPayload.serviceType = formData.serviceType;
+
+    // نضيف الحقول المسموحة الأخرى إذا كانت موجودة (غير الملفات)
+    for (const key of allowedFields) {
+      if (["fullName", "email", "phone", "urgentDelivery", "budget", "serviceType"].includes(key)) continue;
+      const value = formData[key as keyof FormData];
       if (value instanceof File) {
-        // نضيف رابط الملف واسمه
+        // نضيف رابط واسم الملف
         if (uploadedUrls[key]) {
           jsonPayload[key + "Url"] = uploadedUrls[key];
           jsonPayload[key + "Name"] = value.name;
         }
       } else if (Array.isArray(value)) {
-        jsonPayload[key] = value; // نرسل المصفوفة كما هي، سيحولها JSON.stringify تلقائياً
-      } else if (typeof value === "boolean") {
         jsonPayload[key] = value;
       } else if (value !== null && value !== undefined) {
         jsonPayload[key] = value;
+      } else {
+        jsonPayload[key] = ""; // نرسل فارغة لتجنب undefined
       }
     }
 
-    // تأكيد الحقول الأساسية دائمًا
-    jsonPayload.fullName = formData.fullName || "";
-    jsonPayload.email = formData.email || "";
-    jsonPayload.phone = formData.phone || "";
+    // packageName خاص بالباقات
+    if (formData.serviceType === "packages") {
+      jsonPayload.packageName = (formData as any).packageName || "";
+    }
 
-    // إضافة السعر التقديري
     jsonPayload.estimatedPrice = estimatedPrice;
     jsonPayload.priceBreakdown = priceBreakdown;
 
-    // 3. إرسال الطلب كـ JSON
+    // 3. إرسال JSON
     const response = await fetch("/api/send-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -702,7 +713,7 @@ const RequestFormClient: React.FC = () => {
     }
   } catch (error) {
     console.error("فشل الإرسال:", error);
-    alert("حدث خطأ في الشبكة. تأكد من اتصالك بالإنترنت.");
+    alert("حدث خطأ في الشبكة.");
   } finally {
     setLoading(false);
   }
