@@ -142,7 +142,7 @@ const services: ServiceOption[] = [
     label: "كتابة وظائف (الجامعة الافتراضية)",
     icon: "📚",
     description: "حل واجبات ومشاريع الجامعة الافتراضية السورية",
-    price: "75 000-150 000 حسب متطلبات الوظيفة",
+    price: "75000-150000 حسب متطلبات الوظيفة",
     detailsDescription:
       "خدمة مخصصة للجامعة الافتراضية السورية. مدة التسليم القصوى 10 أيام.",
     fields: [
@@ -167,7 +167,7 @@ const services: ServiceOption[] = [
     icon: "📐",
     description:
       "تنسيق البحث وفق المتطلبات (الهوامش - الخطوط - العناوين - الفهرس - المراجع)",
-    price: "300 000",
+    price: "300000",
     fields: [
       "researchFile",
       "universityName",
@@ -181,7 +181,7 @@ const services: ServiceOption[] = [
     icon: "🎓",
     description:
       "مساعدة الطالب في إعداد مشروع التخرج (الهيكل العلمي - التنسيق - التدقيق اللغوي - إعداد العرض)",
-    price: "1 300 000",
+    price: "1300000",
     fields: [
       "projectTitle",
       "specialization",
@@ -197,7 +197,7 @@ const services: ServiceOption[] = [
     label: "إعداد وتصميم السير الذاتية",
     icon: "📄",
     description: "إعداد سيرة ذاتية احترافية",
-    price: "75 000",
+    price: "75000",
     fields: [
       "cvFullName",
       "cvSpecialization",
@@ -213,7 +213,7 @@ const services: ServiceOption[] = [
     label: "إعداد العروض التقديمية",
     icon: "📊",
     description: "تصميم عروض تقديمية احترافية",
-    price: "75 000",
+    price: "75000",
     fields: [
       "presentationTopic",
       "presentationSlides",
@@ -241,7 +241,7 @@ const services: ServiceOption[] = [
     label: "إعداد الاستبيانات",
     icon: "📋",
     description: "تصميم استبيانات علمية لمشاريع التخرج أو الدراسات",
-    price: "100 000",
+    price: "100000",
     fields: [
       "surveyTopic",
       "surveyTarget",
@@ -254,7 +254,7 @@ const services: ServiceOption[] = [
     label: "تطوير مواقع",
     icon: "💻",
     description: "تصميم وبرمجة المواقع",
-    price: "500 000",
+    price: "500000",
     fields: [
       "websiteType",
       "pagesRequired",
@@ -282,7 +282,7 @@ const services: ServiceOption[] = [
     label: "إعداد أبحاث",
     icon: "🔬",
     description: "إعداد الدراسات والأبحاث",
-    price: "300 000",
+    price: "300000",
     fields: ["researchTitle", "methodology", "sourceCount", "citationFormat"],
   },
   {
@@ -1066,7 +1066,7 @@ const RequestFormClient: React.FC = () => {
                       className="w-5 h-5 text-[#00416A] border-2 border-gray-300 rounded focus:ring-[#00416A]"
                     />
                     <span className="text-sm font-medium text-gray-700">
-                      تسليم عاجل (زيادة 50% على السعر) في غضون 3 أيام كحد أقصى
+                      تسليم عاجل (زيادة 50% على السعر) في غضون 3 أيام كحد
                     </span>
                   </label>
                 </div>
