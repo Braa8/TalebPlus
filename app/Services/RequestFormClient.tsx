@@ -623,7 +623,7 @@ const RequestFormClient: React.FC = () => {
 
   setLoading(true);
   try {
-    // 1. رفع الملفات إن وجدت (لن تكون موجودة في الباقات عادةً)
+    // 1. رفع الملفات إلى Vercel Blob (إن وجدت)
     const fileFields = [
       "translationFile", "researchFile", "formattingTemplate",
       "presentationContent", "designFile", "referenceFile",
@@ -635,34 +635,46 @@ const RequestFormClient: React.FC = () => {
       const file = formData[field as keyof FormData] as File | null;
       if (file) {
         try {
-          const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, { method: "POST", body: file });
+          const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+            method: "POST",
+            body: file,
+          });
           if (!res.ok) throw new Error(`فشل رفع ${getFieldLabel(field)}`);
           const blob = await res.json();
           uploadedUrls[field] = blob.url;
-        } catch (e) {
-          console.error(e);
-          alert(`فشل رفع الملف: ${getFieldLabel(field)}`);
+        } catch (err) {
+          console.error(err);
+          alert(`فشل رفع الملف: ${getFieldLabel(field)}. يرجى المحاولة مرة أخرى.`);
           setLoading(false);
           return;
         }
       }
     }
 
-    // 2. بناء كائن JSON خفيف ومخصص للخدمة
+    // 2. التأكد من أن serviceType يصبح "packages" إذا كان هناك packageName
+    if (
+      (formData as any).packageName &&
+      formData.serviceType !== "packages"
+    ) {
+      setFormData(prev => ({ ...prev, serviceType: "packages" }));
+      formData.serviceType = "packages" as any; // تحديث فوري
+    }
+
+    // 3. بناء كائن JSON للإرسال
     const service = services.find(s => s.value === formData.serviceType);
     const allowedFields = new Set([
       "fullName", "email", "phone", "urgentDelivery", "budget", "serviceType",
       ...(service ? service.fields : []),
     ]);
 
-    // نضيف packageName يدوياً لأنه قد لا يكون ضمن fields
+    // نضيف packageName يدوياً إذا لزم الأمر
     if (formData.serviceType === "packages") {
       allowedFields.add("packageName");
     }
 
     const jsonPayload: Record<string, unknown> = {};
 
-    // نضمن الحقول الأساسية دائماً
+    // الحقول الأساسية أولاً
     jsonPayload.fullName = formData.fullName || "";
     jsonPayload.email = formData.email || "";
     jsonPayload.phone = formData.phone || "";
@@ -670,12 +682,12 @@ const RequestFormClient: React.FC = () => {
     jsonPayload.budget = formData.budget || "";
     jsonPayload.serviceType = formData.serviceType;
 
-    // نضيف الحقول المسموحة الأخرى إذا كانت موجودة (غير الملفات)
+    // باقي الحقول المسموحة
     for (const key of allowedFields) {
       if (["fullName", "email", "phone", "urgentDelivery", "budget", "serviceType"].includes(key)) continue;
       const value = formData[key as keyof FormData];
       if (value instanceof File) {
-        // نضيف رابط واسم الملف
+        // رابط واسم الملف
         if (uploadedUrls[key]) {
           jsonPayload[key + "Url"] = uploadedUrls[key];
           jsonPayload[key + "Name"] = value.name;
@@ -685,19 +697,20 @@ const RequestFormClient: React.FC = () => {
       } else if (value !== null && value !== undefined) {
         jsonPayload[key] = value;
       } else {
-        jsonPayload[key] = ""; // نرسل فارغة لتجنب undefined
+        jsonPayload[key] = ""; // تجنب undefined
       }
     }
 
-    // packageName خاص بالباقات
+    // إضافة اسم الباقة إذا كان موجوداً
     if (formData.serviceType === "packages") {
       jsonPayload.packageName = (formData as any).packageName || "";
     }
 
+    // السعر التقديري
     jsonPayload.estimatedPrice = estimatedPrice;
     jsonPayload.priceBreakdown = priceBreakdown;
 
-    // 3. إرسال JSON
+    // 4. إرسال الطلب كـ JSON
     const response = await fetch("/api/send-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -713,7 +726,7 @@ const RequestFormClient: React.FC = () => {
     }
   } catch (error) {
     console.error("فشل الإرسال:", error);
-    alert("حدث خطأ في الشبكة.");
+    alert("حدث خطأ في الشبكة. تأكد من اتصالك بالإنترنت.");
   } finally {
     setLoading(false);
   }

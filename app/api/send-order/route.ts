@@ -155,15 +155,21 @@ export async function POST(request: Request) {
     const hasBudget = sanitizedFormData.budget ? `${sanitizedFormData.budget} ل.س` : 'غير مذكور';
 
     const commonFieldsHtml = `
-      <table dir="rtl" style="width:100%; border-collapse: collapse; margin-bottom: 15px;">
-         <tr><td style="padding:8px; font-weight:bold; width:200px; background:#f9f9f9;">الاسم الكامل</td><td style="padding:8px;">${sanitizedFormData.fullName || ''}</td></tr>
-         <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">البريد الإلكتروني</td><td style="padding:8px;">${sanitizedFormData.email || ''}</td></tr>
-         <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">رقم الهاتف</td><td style="padding:8px;">${sanitizedFormData.phone || ''}</td></tr>
-         <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">الخدمة المطلوبة</td><td style="padding:8px;">${serviceLabel}</td></tr>
-         <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">تسليم عاجل</td><td style="padding:8px;">${urgentDelivery}</td></tr>
-         <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">الميزانية التقريبية</td><td style="padding:8px;">${hasBudget}</td></tr>
-       </table>
-    `;
+  <table dir="rtl" style="width:100%; border-collapse: collapse; margin-bottom: 15px;">
+     <tr><td style="padding:8px; font-weight:bold; width:200px; background:#f9f9f9;">الاسم الكامل</td><td style="padding:8px;">${sanitizedFormData.fullName || ''}</td></tr>
+     <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">البريد الإلكتروني</td><td style="padding:8px;">${sanitizedFormData.email || ''}</td></tr>
+     <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">رقم الهاتف</td><td style="padding:8px;">${sanitizedFormData.phone || ''}</td></tr>
+     <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">الخدمة المطلوبة</td><td style="padding:8px;">${serviceLabel}</td></tr>
+     ${sanitizedFormData.serviceType === 'packages' && sanitizedFormData.packageName ? `
+     <tr>
+       <td style="padding:8px; font-weight:bold; background:#f9f9f9;">الباقة المطلوبة</td>
+       <td style="padding:8px;">${sanitizedFormData.packageName}</td>
+     </tr>
+     ` : ''}
+     <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">تسليم عاجل</td><td style="padding:8px;">${urgentDelivery}</td></tr>
+     <tr><td style="padding:8px; font-weight:bold; background:#f9f9f9;">الميزانية التقريبية</td><td style="padding:8px;">${hasBudget}</td></tr>
+   </table>
+`;
 
     const excludedCommon = ['fullName', 'email', 'phone', 'serviceType', 'urgentDelivery', 'budget'];
     const serviceFields = serviceInfo.fields.filter(f => !excludedCommon.includes(f) && !fileFieldNames.includes(f));
