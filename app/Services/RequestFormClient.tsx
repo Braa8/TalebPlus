@@ -623,7 +623,7 @@ const RequestFormClient: React.FC = () => {
 
   setLoading(true);
   try {
-    // 1. رفع الملفات إلى Vercel Blob أولاً
+    // 1. رفع الملفات إلى Vercel Blob أولاً (كما هو)
     const fileFields = [
       "translationFile",
       "researchFile",
@@ -645,11 +645,7 @@ const RequestFormClient: React.FC = () => {
             method: "POST",
             body: file,
           });
-
-          if (!response.ok) {
-            throw new Error(`فشل رفع ${getFieldLabel(field)}`);
-          }
-
+          if (!response.ok) throw new Error(`فشل رفع ${getFieldLabel(field)}`);
           const blob = await response.json();
           uploadedUrls[field] = blob.url;
         } catch (uploadError) {
@@ -661,40 +657,40 @@ const RequestFormClient: React.FC = () => {
       }
     }
 
-    // 2. بناء FormData مع الروابط بدلاً من الملفات (البنية الأصلية العاملة)
-    const payload = new FormData();
+    // 2. بناء كائن JSON نظيف (بدلاً من FormData)
+    const jsonPayload: Record<string, unknown> = {};
 
-    Object.entries(formData).forEach(([key, value]) => {
+    // إضافة جميع الحقول النصية/المنطقية/المصفوفات
+    for (const [key, value] of Object.entries(formData)) {
       if (value instanceof File) {
-        const url = uploadedUrls[key];
-        if (url) {
-          payload.append(key + "Url", url);
+        // نضيف رابط الملف واسمه
+        if (uploadedUrls[key]) {
+          jsonPayload[key + "Url"] = uploadedUrls[key];
+          jsonPayload[key + "Name"] = value.name;
         }
-        payload.append(key + "Name", value.name);
       } else if (Array.isArray(value)) {
-        payload.append(key, JSON.stringify(value));
+        jsonPayload[key] = value; // نرسل المصفوفة كما هي، سيحولها JSON.stringify تلقائياً
       } else if (typeof value === "boolean") {
-        payload.append(key, String(value));
+        jsonPayload[key] = value;
       } else if (value !== null && value !== undefined) {
-        payload.append(key, String(value));
-      }
-    });
-
-    // ✅ إصلاح حاسم: تأكيد إرسال الحقول الأساسية يدويًا دائمًا
-    const essentialFields = { fullName: formData.fullName || "", email: formData.email || "", phone: formData.phone || "" };
-    for (const [field, val] of Object.entries(essentialFields)) {
-      if (!payload.has(field)) {
-        payload.append(field, val);
+        jsonPayload[key] = value;
       }
     }
 
-    payload.append("estimatedPrice", String(estimatedPrice));
-    payload.append("priceBreakdown", priceBreakdown);
+    // تأكيد الحقول الأساسية دائمًا
+    jsonPayload.fullName = formData.fullName || "";
+    jsonPayload.email = formData.email || "";
+    jsonPayload.phone = formData.phone || "";
 
-    // 3. إرسال الطلب إلى الخادم
+    // إضافة السعر التقديري
+    jsonPayload.estimatedPrice = estimatedPrice;
+    jsonPayload.priceBreakdown = priceBreakdown;
+
+    // 3. إرسال الطلب كـ JSON
     const response = await fetch("/api/send-order", {
       method: "POST",
-      body: payload,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(jsonPayload),
     });
 
     if (response.ok) {
