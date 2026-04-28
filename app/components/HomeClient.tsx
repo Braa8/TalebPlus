@@ -138,7 +138,7 @@ export default function HomeClient() {
               </h2>
             </div>
             <div className="p-4 mt-18">
-              <Link href="/auth/login">
+              <Link href="/auth/signup">
                 <button className="bg-[#F0EAD6] text-[#00416A] text-xl p-4 hover:bg-[#00416A] hover:text-[#F0EAD6] hover:cursor-pointer transition rounded-4xl">
                   إبدأ رحلتك و سجّل دخول
                 </button>

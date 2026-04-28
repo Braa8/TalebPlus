@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import {useSession} from "next-auth/react";
 
 interface Package {
   id: string;
@@ -79,6 +80,9 @@ const PackagesClient: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  const { data: session } = useSession();
+  const isAuthenticated = !!session;
 
   const handlePackageSelect = (pkg: Package) => {
     setSelectedPackage(pkg);
@@ -180,9 +184,9 @@ const PackagesClient: React.FC = () => {
     <div className="min-h-screen bg-linear-to-br from-[#F0EAD6] to-white py-12 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <Link href="/" className="inline-block mb-4 group">
+          <Link href="/Services" className="inline-block mb-4 group">
             <h1 className="text-2xl font-bold text-[#00416A] group-hover:text-opacity-80 transition-colors">
-              ← العودة للرئيسية
+              ← العودة إلى الخدمات
             </h1>
           </Link>
           <h1 className="text-5xl font-bold text-[#00416A] mb-4">اختر باقتك المناسبة</h1>
@@ -200,6 +204,7 @@ const PackagesClient: React.FC = () => {
           >
             <span className="text-sm sm:text-base">{message.text}</span>
             <button
+              disabled={!isAuthenticated}
               onClick={() => setMessage(null)}
               className="text-xl font-bold leading-none mr-4 hover:opacity-70 transition-opacity"
               aria-label="إغلاق"
@@ -219,7 +224,6 @@ const PackagesClient: React.FC = () => {
                   ? 'ring-4 ring-[#00416A] scale-105'
                   : 'hover:shadow-2xl'
               }`}
-              onClick={() => handlePackageSelect(pkg)}
             >
               
               <div className="p-8">
@@ -238,6 +242,7 @@ const PackagesClient: React.FC = () => {
                   ))}
                 </ul>
                 <button
+                  disabled={!isAuthenticated}
                   className={`w-full py-3 rounded-xl font-semibold transition-all ${
                     selectedPackage?.id === pkg.id
                       ? 'bg-[#00416A] text-white shadow-lg'

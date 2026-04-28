@@ -2,7 +2,7 @@
 // الملف: app/Services/RequestFormClient.tsx
 // ==================================================
 "use client";
-
+import { useSession } from "next-auth/react";
 import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { getFieldLabel } from "@/lib/fieldLabels"; // تأكد من المسار الصحيح لملف fieldLabels
@@ -129,7 +129,7 @@ const services: ServiceOption[] = [
     label: "ترجمة",
     icon: "🌐",
     description: "ترجمة النصوص والمستندات",
-    price: "117000",
+    price: "60,000 ل.س للصفحة ",
     fields: [
       "translationFile",
       "translationPages",
@@ -142,7 +142,7 @@ const services: ServiceOption[] = [
     label: "كتابة وظائف (الجامعة الافتراضية)",
     icon: "📚",
     description: "حل واجبات ومشاريع الجامعة الافتراضية السورية",
-    price: "75000-150000 حسب متطلبات الوظيفة",
+    price: "75,000-150,000 ل.س (حسب متطلبات الوظيفة)  ",
     detailsDescription:
       "خدمة مخصصة للجامعة الافتراضية السورية. مدة التسليم القصوى 10 أيام.",
     fields: [
@@ -167,7 +167,7 @@ const services: ServiceOption[] = [
     icon: "📐",
     description:
       "تنسيق البحث وفق المتطلبات (الهوامش - الخطوط - العناوين - الفهرس - المراجع)",
-    price: "300000",
+    price: "300,000 ل.س",
     fields: [
       "researchFile",
       "universityName",
@@ -181,7 +181,7 @@ const services: ServiceOption[] = [
     icon: "🎓",
     description:
       "مساعدة الطالب في إعداد مشروع التخرج (الهيكل العلمي - التنسيق - التدقيق اللغوي - إعداد العرض)",
-    price: "1300000",
+    price: "1,300,000 ل.س",
     fields: [
       "projectTitle",
       "specialization",
@@ -197,7 +197,7 @@ const services: ServiceOption[] = [
     label: "إعداد وتصميم السير الذاتية",
     icon: "📄",
     description: "إعداد سيرة ذاتية احترافية",
-    price: "75000",
+    price: "75,000 ل.س",
     fields: [
       "cvFullName",
       "cvSpecialization",
@@ -213,7 +213,7 @@ const services: ServiceOption[] = [
     label: "إعداد العروض التقديمية",
     icon: "📊",
     description: "تصميم عروض تقديمية احترافية",
-    price: "75000",
+    price: "75,000 ل.س",
     fields: [
       "presentationTopic",
       "presentationSlides",
@@ -227,7 +227,7 @@ const services: ServiceOption[] = [
     label: "تصميم بوسترات وأغلفة",
     icon: "🖼️",
     description: "تصميم غلاف المشروع أو بوستر العرض",
-    price: "100000",
+    price: "100,000 ل.س",
     fields: [
       "posterTitle",
       "posterStudentName",
@@ -241,7 +241,7 @@ const services: ServiceOption[] = [
     label: "إعداد الاستبيانات",
     icon: "📋",
     description: "تصميم استبيانات علمية لمشاريع التخرج أو الدراسات",
-    price: "100000",
+    price: "100,000 ل.س",
     fields: [
       "surveyTopic",
       "surveyTarget",
@@ -254,7 +254,7 @@ const services: ServiceOption[] = [
     label: "تطوير مواقع",
     icon: "💻",
     description: "تصميم وبرمجة المواقع",
-    price: "500000",
+    price: "100$",
     fields: [
       "websiteType",
       "pagesRequired",
@@ -267,8 +267,8 @@ const services: ServiceOption[] = [
     value: "writing",
     label: "كتابة وظائف (عام)",
     icon: "📝",
-    description: "كتابة الأبحاث والتقارير",
-    price: "75000",
+    description: "كتابة وظائف بسيطة أو مقالات أو تقارير",
+    price: "75,000 ل.س",
     fields: [
       "assignmentType",
       "subject",
@@ -279,10 +279,10 @@ const services: ServiceOption[] = [
   },
   {
     value: "research",
-    label: "إعداد أبحاث",
+    label: "إعداد أبحاث الأكاديمية المختصّة",
     icon: "🔬",
     description: "إعداد الدراسات والأبحاث",
-    price: "300000",
+    price: "300,000 ل.س",
     fields: ["researchTitle", "methodology", "sourceCount", "citationFormat"],
   },
   {
@@ -414,7 +414,8 @@ const RequestFormClient: React.FC = () => {
   const [isClientReady, setIsClientReady] = useState(false);
   // مراجع لعناصر input file لإعادة تعيينها يدويًا
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
-
+  const { data: session } = useSession();
+  const isAuthenticated = !!session;
   // تحميل البيانات من localStorage بعد تحميل المكون (client-side فقط)
   useEffect(() => {
   const savedData = localStorage.getItem("requestFormDraft");
@@ -731,40 +732,6 @@ const RequestFormClient: React.FC = () => {
     setLoading(false);
   }
 };
-  // عرض شريط التقدم (3 خطوات فقط)
-  const renderProgress = () => {
-    const steps = [
-      { label: "الخدمة", icon: "🎯" },
-      { label: "المعلومات", icon: "📋" },
-      { label: "التفاصيل", icon: "⚙️" },
-    ];
-    
-    return (
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          {steps.map((step, index) => (
-            <div key={step.label} className="flex flex-col items-center flex-1">
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold transition-colors ${index <= currentStep
-                    ? "bg-[#00416A] text-white"
-                    : "bg-gray-200 text-gray-500"
-                  }`}
-              >
-                {step.icon}
-              </div>
-              <span className="text-xs mt-1 text-gray-600">{step.label}</span>
-            </div>
-          ))}
-        </div>
-        <div className="relative mt-2 h-1 bg-gray-200 rounded-full">
-          <div
-            className="absolute top-0 left-0 h-1 bg-[#00416A] rounded-full transition-all duration-300"
-            style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
-          />
-        </div>
-      </div>
-    );
-  };
 
   if (!isClientReady) {
     return (
@@ -813,11 +780,11 @@ const RequestFormClient: React.FC = () => {
                 )}
               </div>
               
-            </div>
+            </div> 
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={sendEmail}
-                disabled={loading}
+                disabled={loading }
                 className={`flex-1 py-4 px-6 rounded-xl transition-all font-semibold ${loading
                     ? 'bg-gray-400 cursor-not-allowed text-white'
                     : 'bg-[#00416A] hover:bg-opacity-90 text-white'
@@ -857,29 +824,32 @@ const RequestFormClient: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-4 group">
-            <h1 className="text-2xl font-bold text-[#00416A] group-hover:text-opacity-80 transition-colors">
+            <h1 className="text-2xl font-bold text-white bg-[#00416A] rounded-full p-4 group-hover:text-opacity-80 transition-colors">
               ← العودة للرئيسية
             </h1>
           </Link>
           <h1 className="text-5xl font-bold text-[#00416A] mb-2">طلب الخدمة</h1>
           <p className="text-gray-600">
-            املأ النموذج أدناه وسنقوم بالتواصل معك قريباً
+            املأ النموذج أدناه وسنقوم بالتواصل معك قريباً 
           </p>
+          <br/>
+          <i className="text-gray-600 bg-[#00416A] text-white p-2 rounded-full">
+            لن تستطيع طلب الخدمات الا إذا أنشأت حساباً على منصتنا
+          </i>
         </div>
 
-        {renderProgress()}
 
         {/* عرض السعر التقديري مع تنويه */}
         {estimatedPrice > 0 && currentStep !== FormStep.SERVICE && (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border-r-4 border-[#00416A]">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
-                
                 <p className="text-xs text-gray-500 mt-1">
                   * السعر يزداد 50% في حالة التسليم العاجل
                 </p>
               </div>
               <button
+                disabled={!isAuthenticated}
                 onClick={() => setShowConfirmation(true)}
                 className="bg-[#00416A] text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors text-sm font-semibold"
               >
@@ -892,6 +862,7 @@ const RequestFormClient: React.FC = () => {
         <form
           onSubmit={(e) => e.preventDefault()}
           className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 border border-white/20"
+          
         >
           {/* الخطوة 1: اختيار الخدمة */}
           {currentStep === FormStep.SERVICE && (
@@ -942,6 +913,7 @@ const RequestFormClient: React.FC = () => {
                         checked={formData.serviceType === s.value}
                         onChange={handleInputChange}
                         className="sr-only"
+                        disabled={!isAuthenticated}
                       />
                       <div className="text-center">
                         <div className="text-5xl mb-3">{s.icon}</div>
@@ -966,6 +938,7 @@ const RequestFormClient: React.FC = () => {
               )}
               <div className="flex justify-end mt-8">
                 <button
+                  disabled={!isAuthenticated}
                   type="button"
                   onClick={goToNextStep}
                   className="bg-[#00416A] text-white px-8 py-3 rounded-xl hover:bg-opacity-90 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"

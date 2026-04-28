@@ -73,7 +73,7 @@ export default function SignUpPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00416A] focus:border-transparent"
-              placeholder="محمد أحمد"
+              placeholder="أدخل الاسم الثلاثي"
               required
             />
           </div>
