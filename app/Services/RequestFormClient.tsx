@@ -418,17 +418,17 @@ const RequestFormClient: React.FC = () => {
   const isAuthenticated = !!session;
   // تحميل البيانات من localStorage بعد تحميل المكون (client-side فقط)
   useEffect(() => {
-  const savedData = localStorage.getItem("requestFormDraft");
-  if (savedData) {
-    try {
-      const parsed = JSON.parse(savedData);
-      setFormData((prev) => ({ ...prev, ...parsed }));
-    } catch (e) {
-      console.error("Failed to load draft", e);
+    const savedData = localStorage.getItem("requestFormDraft");
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        setFormData((prev) => ({ ...prev, ...parsed }));
+      } catch (e) {
+        console.error("Failed to load draft", e);
+      }
     }
-  }
-  setIsClientReady(true); // 
-}, []);
+    setIsClientReady(true); // 
+  }, []);
 
   // حالة السعر التقديري
   const [estimatedPrice, setEstimatedPrice] = useState<number>(0);
@@ -607,6 +607,11 @@ const RequestFormClient: React.FC = () => {
     setCurrentStep((prev) => prev - 1);
   };
 
+  const quickSelectService = (serviceValue: string) => {
+    setFormData(prev => filterFormDataForService(prev, serviceValue));
+    setCurrentStep(FormStep.BASIC_INFO); // انتقل مباشرة لملء البيانات
+  };
+
   const resetForm = () => {
     setFormData(createEmptyFormData());
     setShowConfirmation(false);
@@ -617,121 +622,121 @@ const RequestFormClient: React.FC = () => {
   };
 
   const sendEmail = async () => {
-  if (!validateFields()) {
-    alert("يرجى ملء جميع الحقول المطلوبة قبل الإرسال.");
-    return;
-  }
+    if (!validateFields()) {
+      alert("يرجى ملء جميع الحقول المطلوبة قبل الإرسال.");
+      return;
+    }
 
-  setLoading(true);
-  try {
-    // 1. رفع الملفات إلى Vercel Blob (إن وجدت)
-    const fileFields = [
-      "translationFile", "researchFile", "formattingTemplate",
-      "presentationContent", "designFile", "referenceFile",
-      "posterLogo", "homeWorkFile",
-    ];
-    const uploadedUrls: Record<string, string> = {};
+    setLoading(true);
+    try {
+      // 1. رفع الملفات إلى Vercel Blob (إن وجدت)
+      const fileFields = [
+        "translationFile", "researchFile", "formattingTemplate",
+        "presentationContent", "designFile", "referenceFile",
+        "posterLogo", "homeWorkFile",
+      ];
+      const uploadedUrls: Record<string, string> = {};
 
-    for (const field of fileFields) {
-      const file = formData[field as keyof FormData] as File | null;
-      if (file) {
-        try {
-          const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
-            method: "POST",
-            body: file,
-          });
-          if (!res.ok) throw new Error(`فشل رفع ${getFieldLabel(field)}`);
-          const blob = await res.json();
-          uploadedUrls[field] = blob.url;
-        } catch (err) {
-          console.error(err);
-          alert(`فشل رفع الملف: ${getFieldLabel(field)}. يرجى المحاولة مرة أخرى.`);
-          setLoading(false);
-          return;
+      for (const field of fileFields) {
+        const file = formData[field as keyof FormData] as File | null;
+        if (file) {
+          try {
+            const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+              method: "POST",
+              body: file,
+            });
+            if (!res.ok) throw new Error(`فشل رفع ${getFieldLabel(field)}`);
+            const blob = await res.json();
+            uploadedUrls[field] = blob.url;
+          } catch (err) {
+            console.error(err);
+            alert(`فشل رفع الملف: ${getFieldLabel(field)}. يرجى المحاولة مرة أخرى.`);
+            setLoading(false);
+            return;
+          }
         }
       }
-    }
 
-    // 2. التأكد من أن serviceType يصبح "packages" إذا كان هناك packageName
-    if (
-      (formData as any).packageName &&
-      formData.serviceType !== "packages"
-    ) {
-      setFormData(prev => ({ ...prev, serviceType: "packages" }));
-      formData.serviceType = "packages" as any; // تحديث فوري
-    }
+      // 2. التأكد من أن serviceType يصبح "packages" إذا كان هناك packageName
+      if (
+        (formData as any).packageName &&
+        formData.serviceType !== "packages"
+      ) {
+        setFormData(prev => ({ ...prev, serviceType: "packages" }));
+        formData.serviceType = "packages" as any; // تحديث فوري
+      }
 
-    // 3. بناء كائن JSON للإرسال
-    const service = services.find(s => s.value === formData.serviceType);
-    const allowedFields = new Set([
-      "fullName", "email", "phone", "urgentDelivery", "budget", "serviceType",
-      ...(service ? service.fields : []),
-    ]);
+      // 3. بناء كائن JSON للإرسال
+      const service = services.find(s => s.value === formData.serviceType);
+      const allowedFields = new Set([
+        "fullName", "email", "phone", "urgentDelivery", "budget", "serviceType",
+        ...(service ? service.fields : []),
+      ]);
 
-    // نضيف packageName يدوياً إذا لزم الأمر
-    if (formData.serviceType === "packages") {
-      allowedFields.add("packageName");
-    }
+      // نضيف packageName يدوياً إذا لزم الأمر
+      if (formData.serviceType === "packages") {
+        allowedFields.add("packageName");
+      }
 
-    const jsonPayload: Record<string, unknown> = {};
+      const jsonPayload: Record<string, unknown> = {};
 
-    // الحقول الأساسية أولاً
-    jsonPayload.fullName = formData.fullName || "";
-    jsonPayload.email = formData.email || "";
-    jsonPayload.phone = formData.phone || "";
-    jsonPayload.urgentDelivery = formData.urgentDelivery;
-    jsonPayload.budget = formData.budget || "";
-    jsonPayload.serviceType = formData.serviceType;
+      // الحقول الأساسية أولاً
+      jsonPayload.fullName = formData.fullName || "";
+      jsonPayload.email = formData.email || "";
+      jsonPayload.phone = formData.phone || "";
+      jsonPayload.urgentDelivery = formData.urgentDelivery;
+      jsonPayload.budget = formData.budget || "";
+      jsonPayload.serviceType = formData.serviceType;
 
-    // باقي الحقول المسموحة
-    for (const key of allowedFields) {
-      if (["fullName", "email", "phone", "urgentDelivery", "budget", "serviceType"].includes(key)) continue;
-      const value = formData[key as keyof FormData];
-      if (value instanceof File) {
-        // رابط واسم الملف
-        if (uploadedUrls[key]) {
-          jsonPayload[key + "Url"] = uploadedUrls[key];
-          jsonPayload[key + "Name"] = value.name;
+      // باقي الحقول المسموحة
+      for (const key of allowedFields) {
+        if (["fullName", "email", "phone", "urgentDelivery", "budget", "serviceType"].includes(key)) continue;
+        const value = formData[key as keyof FormData];
+        if (value instanceof File) {
+          // رابط واسم الملف
+          if (uploadedUrls[key]) {
+            jsonPayload[key + "Url"] = uploadedUrls[key];
+            jsonPayload[key + "Name"] = value.name;
+          }
+        } else if (Array.isArray(value)) {
+          jsonPayload[key] = value;
+        } else if (value !== null && value !== undefined) {
+          jsonPayload[key] = value;
+        } else {
+          jsonPayload[key] = ""; // تجنب undefined
         }
-      } else if (Array.isArray(value)) {
-        jsonPayload[key] = value;
-      } else if (value !== null && value !== undefined) {
-        jsonPayload[key] = value;
+      }
+
+      // إضافة اسم الباقة إذا كان موجوداً
+      if (formData.serviceType === "packages") {
+        jsonPayload.packageName = (formData as any).packageName || "";
+      }
+
+      // السعر التقديري
+      jsonPayload.estimatedPrice = estimatedPrice;
+      jsonPayload.priceBreakdown = priceBreakdown;
+
+      // 4. إرسال الطلب كـ JSON
+      const response = await fetch("/api/send-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(jsonPayload),
+      });
+
+      if (response.ok) {
+        alert("تم إرسال طلبك بنجاح! سنتواصل معك قريبًا.");
+        resetForm();
       } else {
-        jsonPayload[key] = ""; // تجنب undefined
+        const error = await response.json();
+        alert(error.error || "حدث خطأ أثناء الإرسال، يرجى المحاولة لاحقًا.");
       }
+    } catch (error) {
+      console.error("فشل الإرسال:", error);
+      alert("حدث خطأ في الشبكة. تأكد من اتصالك بالإنترنت.");
+    } finally {
+      setLoading(false);
     }
-
-    // إضافة اسم الباقة إذا كان موجوداً
-    if (formData.serviceType === "packages") {
-      jsonPayload.packageName = (formData as any).packageName || "";
-    }
-
-    // السعر التقديري
-    jsonPayload.estimatedPrice = estimatedPrice;
-    jsonPayload.priceBreakdown = priceBreakdown;
-
-    // 4. إرسال الطلب كـ JSON
-    const response = await fetch("/api/send-order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(jsonPayload),
-    });
-
-    if (response.ok) {
-      alert("تم إرسال طلبك بنجاح! سنتواصل معك قريبًا.");
-      resetForm();
-    } else {
-      const error = await response.json();
-      alert(error.error || "حدث خطأ أثناء الإرسال، يرجى المحاولة لاحقًا.");
-    }
-  } catch (error) {
-    console.error("فشل الإرسال:", error);
-    alert("حدث خطأ في الشبكة. تأكد من اتصالك بالإنترنت.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   if (!isClientReady) {
     return (
@@ -779,15 +784,15 @@ const RequestFormClient: React.FC = () => {
                   <p className="text-red-600 font-semibold">تسليم عاجل</p>
                 )}
               </div>
-              
-            </div> 
+
+            </div>
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={sendEmail}
-                disabled={loading }
+                disabled={loading}
                 className={`flex-1 py-4 px-6 rounded-xl transition-all font-semibold ${loading
-                    ? 'bg-gray-400 cursor-not-allowed text-white'
-                    : 'bg-[#00416A] hover:bg-opacity-90 text-white'
+                  ? 'bg-gray-400 cursor-not-allowed text-white'
+                  : 'bg-[#00416A] hover:bg-opacity-90 text-white'
                   }`}
               >
                 {loading ? (
@@ -823,18 +828,18 @@ const RequestFormClient: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#F0EAD6] to-white py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-4 group">
+          <Link onClick={goToPrevStep} href="/Services" className="inline-block mb-4 group">
             <h1 className="text-2xl font-bold text-white bg-[#00416A] rounded-full p-4 group-hover:text-opacity-80 transition-colors">
-              ← العودة للرئيسية
+              ← العودة 
             </h1>
           </Link>
           <h1 className="text-5xl font-bold text-[#00416A] mb-2">طلب الخدمة</h1>
           <p className="text-gray-600">
-            املأ النموذج أدناه وسنقوم بالتواصل معك قريباً 
+            املأ النموذج أدناه وسنقوم بالتواصل معك قريباً
           </p>
-          <br/>
+          <br />
           <i className="text-gray-600 bg-[#00416A] text-white p-2 rounded-full">
-            لن تستطيع طلب الخدمات الا إذا أنشأت حساباً على منصتنا
+           ⚠️ لن تستطيع طلب الخدمات الا إذا أنشأت حساباً على منصتنا 
           </i>
         </div>
 
@@ -862,8 +867,25 @@ const RequestFormClient: React.FC = () => {
         <form
           onSubmit={(e) => e.preventDefault()}
           className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 border border-white/20"
-          
+
         >
+
+          {/* شريط الاختصارات السريعة */}
+          <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+            <div className="flex gap-3 min-w-max">
+              {services.filter(s => s.value !== 'packages').map((s) => (
+                <button
+                  key={s.value}
+                  onClick={() => quickSelectService(s.value)}
+                  className="flex items-center gap-2 px-5 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-[#00416A] hover:bg-blue-50 transition-all shadow-sm whitespace-nowrap text-sm font-medium text-gray-700"
+                >
+                  <span className="text-xl">{s.icon}</span>
+                  <span>{s.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* الخطوة 1: اختيار الخدمة */}
           {currentStep === FormStep.SERVICE && (
             <div className="space-y-8">
@@ -902,8 +924,8 @@ const RequestFormClient: React.FC = () => {
                     <label
                       key={s.value}
                       className={`relative block p-6 rounded-2xl border-2 cursor-pointer transition-all ${formData.serviceType === s.value
-                          ? "border-[#00416A] bg-blue-50 shadow-lg"
-                          : "border-gray-200 hover:border-gray-300 bg-white"
+                        ? "border-[#00416A] bg-blue-50 shadow-lg"
+                        : "border-gray-200 hover:border-gray-300 bg-white"
                         }`}
                     >
                       <input
@@ -1052,6 +1074,7 @@ const RequestFormClient: React.FC = () => {
                   السابق
                 </button>
                 <button
+                  disabled={!isAuthenticated}
                   type="button"
                   onClick={goToNextStep}
                   className="bg-[#00416A] text-white px-8 py-3 rounded-xl hover:bg-opacity-90 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -1091,8 +1114,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.fullNameTriple}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.fullNameTriple
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.fullNameTriple && (
@@ -1115,8 +1138,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.universityId}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.universityId
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.universityId && (
@@ -1139,8 +1162,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.classNumber}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.classNumber
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.classNumber && (
@@ -1163,8 +1186,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.professorName}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.professorName
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.professorName && (
@@ -1187,8 +1210,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.programName}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.programName
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.programName && (
@@ -1211,8 +1234,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.programCode}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.programCode
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.programCode && (
@@ -1235,8 +1258,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.subjectName}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.subjectName
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.subjectName && (
@@ -1258,8 +1281,8 @@ const RequestFormClient: React.FC = () => {
                       onChange={handleInputChange}
                       rows={3}
                       className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.homeWorkDetails
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.homeWorkDetails && (
@@ -1318,7 +1341,7 @@ const RequestFormClient: React.FC = () => {
                       </div>
                     )}
 
-                    { (formData.isSharedAssignment || formData.hasPartners) && (
+                    {(formData.isSharedAssignment || formData.hasPartners) && (
                       <div className="sm:col-span-2">
                         <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                           معلومات الشركاء <span className="text-red-500">*</span>
@@ -1330,8 +1353,8 @@ const RequestFormClient: React.FC = () => {
                           rows={3}
                           placeholder="الرجاء إدخال الأسماء الكاملة والأرقام الجامعية ومعلومات الاتصال لكل شريك و ذلك حفاظاً على استفادتكم من الخدمة..."
                           className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.partnersInfo
-                              ? "border-red-500"
-                              : "border-gray-200"
+                            ? "border-red-500"
+                            : "border-gray-200"
                             }`}
                         />
                         {errors.partnersInfo && (
@@ -1356,8 +1379,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.subjectCode}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-2.5 sm:py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] text-sm sm:text-base ${errors.subjectCode
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.subjectCode && (
@@ -1402,8 +1425,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.translationPages}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.translationPages
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                       placeholder="0"
                     />
@@ -1426,8 +1449,8 @@ const RequestFormClient: React.FC = () => {
                       onChange={handleInputChange}
                       required
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.targetLanguage
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     >
                       <option value="">اختر اللغة</option>
@@ -1454,8 +1477,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.deliveryDate}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.deliveryDate
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.deliveryDate && (
@@ -1499,8 +1522,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.universityName}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.universityName
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.universityName && (
@@ -1539,8 +1562,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.researchDeliveryDate}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.researchDeliveryDate
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.researchDeliveryDate && (
@@ -1564,8 +1587,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.projectTitle}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.projectTitle
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.projectTitle && (
@@ -1588,8 +1611,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.specialization}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.specialization
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.specialization && (
@@ -1613,8 +1636,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.expectedPages}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.expectedPages
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.expectedPages && (
@@ -1637,8 +1660,8 @@ const RequestFormClient: React.FC = () => {
                       onChange={handleInputChange}
                       rows={3}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.universityRequirements
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                       placeholder="اذكر متطلبات الجامعة الخاصة بمشروع التخرج..."
                     />
@@ -1662,8 +1685,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.projectDeliveryDate}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.projectDeliveryDate
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.projectDeliveryDate && (
@@ -1741,8 +1764,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.cvSpecialization}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.cvSpecialization
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.cvSpecialization && (
@@ -1765,8 +1788,8 @@ const RequestFormClient: React.FC = () => {
                       onChange={handleInputChange}
                       rows={3}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.cvExperience
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                       placeholder="الخبرات السابقة..."
                     />
@@ -1836,8 +1859,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.cvLanguages}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.cvLanguages
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                       placeholder="العربية (أم)، الإنجليزية (متقدم)..."
                     />
@@ -1861,8 +1884,8 @@ const RequestFormClient: React.FC = () => {
                       onChange={handleInputChange}
                       rows={2}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.cvObjective
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                       placeholder="أهدافك المهنية..."
                     />
@@ -1887,8 +1910,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.presentationTopic}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.presentationTopic
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.presentationTopic && (
@@ -1911,8 +1934,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.presentationSlides}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.presentationSlides
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.presentationSlides && (
@@ -1956,8 +1979,8 @@ const RequestFormClient: React.FC = () => {
                       onChange={handleInputChange}
                       required
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.presentationLanguage
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     >
                       <option value="">اختر اللغة</option>
@@ -1985,8 +2008,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.presentationDeliveryDate}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.presentationDeliveryDate
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.presentationDeliveryDate && (
@@ -2010,8 +2033,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.posterTitle}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.posterTitle
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.posterTitle && (
@@ -2034,8 +2057,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.posterStudentName}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.posterStudentName
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.posterStudentName && (
@@ -2058,8 +2081,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.posterUniversity}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.posterUniversity
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.posterUniversity && (
@@ -2120,8 +2143,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.surveyTopic}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.surveyTopic
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.surveyTopic && (
@@ -2144,8 +2167,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.surveyTarget}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.surveyTarget
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.surveyTarget && (
@@ -2169,8 +2192,8 @@ const RequestFormClient: React.FC = () => {
                       value={formData.surveyQuestionsCount}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.surveyQuestionsCount
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     />
                     {errors.surveyQuestionsCount && (
@@ -2192,8 +2215,8 @@ const RequestFormClient: React.FC = () => {
                       onChange={handleInputChange}
                       required
                       className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-[#00416A] ${errors.surveyQuestionType
-                          ? "border-red-500"
-                          : "border-gray-200"
+                        ? "border-red-500"
+                        : "border-gray-200"
                         }`}
                     >
                       <option value="">اختر النوع</option>

@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     // تطبيق تحديد المعدل أولاً (قبل قراءة الجسم لتوفير الموارد)
     const rateLimitResult = await rateLimit(request, {
       windowMs: 60 * 60 * 1000, // 1 ساعة
-      max: 1,
+      max: 5,
       identifier: 'signup',
     });
     if (rateLimitResult) return rateLimitResult;
